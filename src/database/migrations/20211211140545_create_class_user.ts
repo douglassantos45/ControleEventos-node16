@@ -8,6 +8,10 @@ export async function up(knex: Knex): Promise<void> {
     table.string('andress').notNullable();
     table.string('phone').notNullable();
     table.string('mail').notNullable();
+    table
+      .timestamp('created_at')
+      .defaultTo(knex.raw('CURRENT_TIMESTAMP'))
+      .notNullable();
   });
 }
 
