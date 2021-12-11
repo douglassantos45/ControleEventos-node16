@@ -1,0 +1,26 @@
+{
+  "name": "ControleEventos-node16",
+  "version": "1.0.0",
+  "main": "index.js",
+  "repository": "git@github.com:douglassantos45/ControleEventos-node16.git",
+  "author": "Douglas Tott <douglasifbaianosb@gmail.com>",
+  "license": "MIT",
+  "scripts": {
+    "dev:start": "ts-node-dev --transpile-only --ignore-watch node_modules --respawn src/server.ts"
+  },
+  "dependencies": {
+    "express": "^4.17.1",
+    "knex": "^0.95.14"
+  },
+  "devDependencies": {
+    "@types/express": "^4.17.13",
+    "@typescript-eslint/eslint-plugin": "^5.6.0",
+    "@typescript-eslint/parser": "^5.6.0",
+    "eslint": "^8.4.1",
+    "eslint-config-airbnb-base": "^15.0.0",
+    "eslint-plugin-import": "^2.25.3",
+    "sqlite3": "^5.0.2",
+    "ts-node-dev": "^1.1.8",
+    "typescript": "^4.5.3"
+  }
+}
