@@ -9,7 +9,7 @@ export async function up(knex: Knex): Promise<void> {
       .integer('member_id')
       .notNullable()
       .references('id')
-      .inTable('members')
+      .inTable('actors')
       .onUpdate('CASCADE')
       .onDelete('CASCADE');
 
