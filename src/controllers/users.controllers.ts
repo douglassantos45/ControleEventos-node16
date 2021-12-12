@@ -1,9 +1,17 @@
 import { Request, Response } from 'express';
+import db from '../database/database';
 
 export default class UserController {
   async index(req: Request, res: Response) {
     try {
-      res.status(200).send('OK');
+      const users = await db('actors')
+        .join('users', 'users.id', '=', 'actors.user_id')
+        .select(['actors.type', 'users.*']);
+
+      res.status(200).json({
+        error: false,
+        data: users,
+      });
     } catch (err) {
       console.log(`Error in Index of USER controller ${err}`);
       res.status(500).json({
