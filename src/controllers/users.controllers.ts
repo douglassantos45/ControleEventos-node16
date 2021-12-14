@@ -48,10 +48,21 @@ export default class UserController {
   }
 
   async update(req: Request, res: Response) {
+    const { id } = req.params;
     const data = req.body;
     try {
-      console.log(data);
-      res.status(201).json({
+      const user = await db('users').where('id', '=', id);
+
+      if (!user) {
+        return res.status(404).json({
+          error: false,
+          message: 'User not found!',
+        });
+      }
+
+      await db('users').update(data);
+
+      return res.status(201).json({
         error: false,
         message: 'success',
       });
