@@ -24,6 +24,7 @@ export default class UserController {
   async store(req: Request, res: Response) {
     const { name, genus, cep, street, phone, mail, type } = req.body;
     const trx = await db.transaction();
+    console.log('aqui');
     try {
       const usersId = await trx('users').insert({
         name,
