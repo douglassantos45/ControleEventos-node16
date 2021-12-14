@@ -22,17 +22,24 @@ export default class UserController {
   }
 
   async store(req: Request, res: Response) {
-    const data = req.body;
+    const { name, genus, cep, street, phone, mail, type } = req.body;
     const trx = await db.transaction();
+
     try {
-      if (!(await trx('users').insert(data))) {
-        console.log('Erro entering USER.');
-        await trx.rollback();
-        res.status(404).json({
-          error: true,
-          message: 'Error',
-        });
-      }
+      const usersId = await trx('users').insert({
+        name,
+        genus,
+        cep,
+        street,
+        phone,
+        mail,
+      });
+
+      await trx('actors').insert({
+        type,
+        user_id: usersId,
+      });
+
       await trx.commit();
       res.status(201).json({
         error: false,
@@ -48,10 +55,22 @@ export default class UserController {
   }
 
   async update(req: Request, res: Response) {
+    const { id } = req.params;
+
     const data = req.body;
     try {
-      console.log(data);
-      res.status(201).json({
+      const [user] = await db('users').where('id', '=', id);
+
+      if (!user) {
+        return res.status(404).json({
+          error: false,
+          message: 'User not found!',
+        });
+      }
+
+      await db('users').where('id', '=', id).update(data);
+
+      return res.status(201).json({
         error: false,
         message: 'success',
       });
@@ -67,6 +86,17 @@ export default class UserController {
   async remove(req: Request, res: Response) {
     const { id } = req.params;
     try {
+      const [user] = await db('users').where('id', '=', id);
+
+      if (!user) {
+        return res.status(404).json({
+          error: false,
+          message: 'User not found!',
+        });
+      }
+
+      await db('users').where('id', '=', id).del();
+
       res.status(200).json({
         error: false,
         message: 'success',
