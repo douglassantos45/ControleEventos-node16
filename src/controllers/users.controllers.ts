@@ -79,6 +79,15 @@ export default class UserController {
   async remove(req: Request, res: Response) {
     const { id } = req.params;
     try {
+      if (!(await db('users').where('id', '=', id))) {
+        return res.status(404).json({
+          error: false,
+          message: 'User not found!',
+        });
+      }
+
+      await db('users').where('id', '=', id).del();
+
       res.status(200).json({
         error: false,
         message: 'success',
