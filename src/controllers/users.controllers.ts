@@ -22,17 +22,23 @@ export default class UserController {
   }
 
   async store(req: Request, res: Response) {
-    const data = req.body;
+    const { name, genus, cep, street, phone, mail, type } = req.body;
     const trx = await db.transaction();
     try {
-      if (!(await trx('users').insert(data))) {
-        console.log('Erro entering USER.');
-        await trx.rollback();
-        res.status(404).json({
-          error: true,
-          message: 'Error',
-        });
-      }
+      const usersId = await trx('users').insert({
+        name,
+        genus,
+        cep,
+        street,
+        phone,
+        mail,
+      });
+
+      await trx('actors').insert({
+        type,
+        user_id: usersId,
+      });
+
       await trx.commit();
       res.status(201).json({
         error: false,
