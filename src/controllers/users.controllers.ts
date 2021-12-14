@@ -49,9 +49,10 @@ export default class UserController {
 
   async update(req: Request, res: Response) {
     const { id } = req.params;
+
     const data = req.body;
     try {
-      const user = await db('users').where('id', '=', id);
+      const [user] = await db('users').where('id', '=', id);
 
       if (!user) {
         return res.status(404).json({
@@ -60,7 +61,7 @@ export default class UserController {
         });
       }
 
-      await db('users').update(data);
+      await db('users').where('id', '=', id).update(data);
 
       return res.status(201).json({
         error: false,
