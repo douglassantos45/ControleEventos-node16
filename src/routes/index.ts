@@ -22,6 +22,7 @@ routes.post('/events', eventController.store);
 /* END EVENTS */
 
 /* ARTICLES */
+routes.get('/articles', articleController.index);
 routes.post('/articles', articleController.store);
 /* END ARTICLES */
 
