@@ -8,8 +8,8 @@ export default class ArticlesController {
     try {
       const articlesIds = await trx('articles').insert({
         title,
-        memberId,
-        eventId,
+        member_id: memberId,
+        event_id: eventId,
       });
 
       const articleTopoics = topics.map((topic) => {
