@@ -2,6 +2,46 @@ import { Request, Response } from 'express';
 import db from '../database/database';
 
 export default class ArticlesController {
+  async index(req: Request, res: Response) {
+    try {
+      const articles = await db('articles');
+      const articlesTopics = await db('article_topics')
+        .join('articles', 'articles.id', '=', 'article_topics.event_id')
+        .join('topics', 'topics.id', '=', 'article_topics.topic_id')
+        .select(['articles.id', 'topics.type']);
+
+      const articlesResponse = articles.map((article) => {
+        const topics = articlesTopics.filter((topicEvent) => {
+          if (topicEvent.id === article.id) {
+            delete topicEvent.id;
+            const topic = topicEvent.type;
+            return { topic };
+          }
+        });
+
+        return {
+          id: article.id,
+          article: {
+            title: article.title,
+            submission: article.author,
+            topics,
+          },
+        };
+      });
+
+      res.status(200).json({
+        error: false,
+        data: articlesResponse,
+      });
+    } catch (err) {
+      console.log(`Error in INDEX of EVENTS controller ${err}`);
+      return res.status(500).json({
+        error: true,
+        message: 'Error',
+      });
+    }
+  }
+
   async store(req: Request, res: Response) {
     const { title, memberId, eventId, topics } = req.body;
     const trx = await db.transaction();
