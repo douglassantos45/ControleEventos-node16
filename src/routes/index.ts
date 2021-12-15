@@ -22,7 +22,7 @@ routes.post('/events', eventController.store);
 /* END EVENTS */
 
 /* ARTICLES */
-routes.get('/articles', articleController.store);
+routes.post('/articles', articleController.store);
 /* END ARTICLES */
 
 export default routes;
