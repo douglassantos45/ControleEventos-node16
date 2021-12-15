@@ -12,6 +12,17 @@ export default class ArticlesController {
         eventId,
       });
 
+      const articleTopoics = topics.map((topic) => {
+        return {
+          article_id: articlesIds,
+          topic_id: topic.id,
+        };
+      });
+
+      await trx('article_topics').insert(articleTopoics);
+
+      await trx.commit();
+
       res.status(201).json({
         error: false,
         message: 'success',
