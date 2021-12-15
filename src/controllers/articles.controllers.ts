@@ -4,15 +4,28 @@ import db from '../database/database';
 export default class ArticlesController {
   async index(req: Request, res: Response) {
     try {
-      const articles = await db('articles');
+      const articles = await db('articles')
+        .join('events', 'events.id', '=', 'articles.event_id')
+        .join('actors', 'actors.id', '=', 'articles.member_id')
+        .join('users', 'users.id', '=', 'actors.user_id')
+        .select([
+          { articleId: 'articles.id' },
+          'articles.*',
+          { userId: 'users.id' },
+          { userName: 'users.name' },
+          { eventId: 'events.id' },
+          { eventName: 'events.name' },
+          'events.*',
+        ]);
+
       const articlesTopics = await db('article_topics')
-        .join('articles', 'articles.id', '=', 'article_topics.event_id')
+        .join('articles', 'articles.id', '=', 'article_topics.article_id')
         .join('topics', 'topics.id', '=', 'article_topics.topic_id')
         .select(['articles.id', 'topics.type']);
 
       const articlesResponse = articles.map((article) => {
         const topics = articlesTopics.filter((topicEvent) => {
-          if (topicEvent.id === article.id) {
+          if (topicEvent.id === article.articleId) {
             delete topicEvent.id;
             const topic = topicEvent.type;
             return { topic };
@@ -23,8 +36,13 @@ export default class ArticlesController {
           id: article.id,
           article: {
             title: article.title,
-            submission: article.author,
+            submission: article.userName,
             topics,
+          },
+          event: {
+            name: article.eventName,
+            federation: article.federation,
+            deadline: article.deadline,
           },
         };
       });
