@@ -5,11 +5,6 @@ export async function up(knex: Knex): Promise<void> {
     table.increments('id').notNullable();
 
     table
-      .timestamp('created_at')
-      .defaultTo(knex.raw('CURRENT_TIMESTAMP'))
-      .notNullable();
-
-    table
       .integer('article_id')
       .notNullable()
       .references('id')
@@ -24,6 +19,15 @@ export async function up(knex: Knex): Promise<void> {
       .inTable('topics')
       .onUpdate('CASCADE')
       .onDelete('CASCADE');
+
+    table
+      .timestamp('created_at')
+      .defaultTo(knex.raw('CURRENT_TIMESTAMP'))
+      .notNullable();
+    table
+      .timestamp('updated_at')
+      .defaultTo(knex.raw('CURRENT_TIMESTAMP'))
+      .notNullable();
   });
 }
 

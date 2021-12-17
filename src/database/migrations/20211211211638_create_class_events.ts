@@ -10,17 +10,21 @@ export async function up(knex: Knex): Promise<void> {
     table.string('end').notNullable();
 
     table
-      .timestamp('created_at')
-      .defaultTo(knex.raw('CURRENT_TIMESTAMP'))
-      .notNullable();
-
-    table
       .integer('coordenator_id')
       .notNullable()
       .references('id')
       .inTable('actors')
       .onUpdate('CASCADE')
       .onDelete('CASCADE');
+
+    table
+      .timestamp('created_at')
+      .defaultTo(knex.raw('CURRENT_TIMESTAMP'))
+      .notNullable();
+    table
+      .timestamp('updated_at')
+      .defaultTo(knex.raw('CURRENT_TIMESTAMP'))
+      .notNullable();
   });
 }
 
