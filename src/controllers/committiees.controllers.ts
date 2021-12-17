@@ -10,6 +10,11 @@ export default class CommittieesControllers {
         coordenator_id: coordenatorId,
       });
 
+      const articles2 = await trx('articles')
+        .join('actors', 'actors.id', '=', 'articles.member_id')
+        .join('users', 'users.id', '=', 'actors.user_id');
+      console.log('aqui', articles2);
+
       const committieeApraisers = appraisers.map((appraiser) => ({
         committiee_id: committieeId,
         appraiser_id: appraiser.id,
@@ -33,7 +38,7 @@ export default class CommittieesControllers {
         return appraiser;
       });
 
-      const userName = articlesAppraiserId.map((aP) => {
+      const [userName] = articlesAppraiserId.map((aP) => {
         const name = aP.name;
         return name;
       });
