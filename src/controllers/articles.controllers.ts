@@ -4,48 +4,32 @@ import db from '../database/database';
 export default class ArticlesController {
   async index(req: Request, res: Response) {
     try {
-      const articles = await db('articles')
-        .join('events', 'events.id', '=', 'articles.event_id')
+      const articles = await db('articles_events')
+        .join('events', 'events.id', '=', 'articles_events.event_id')
+        .join(
+          'actor_articles',
+          'actor_articles.article_id',
+          '=',
+          'articles_events.article_id',
+        )
+        .join('articles', 'articles.id', '=', 'actor_articles.article_id')
         .join('actors', 'actors.id', '=', 'articles.member_id')
         .join('users', 'users.id', '=', 'actors.user_id')
         .select([
-          { articleId: 'articles.id' },
-          'articles.*',
-          { userId: 'users.id' },
+          'events.name',
+          'articles.id',
+          'articles.title',
           { userName: 'users.name' },
-          { eventId: 'events.id' },
-          { eventName: 'events.name' },
-          'events.*',
         ]);
 
-      const articlesTopics = await db('article_topics')
-        .join('articles', 'articles.id', '=', 'article_topics.article_id')
-        .join('topics', 'topics.id', '=', 'article_topics.topic_id')
-        .select(['articles.id', 'topics.type']);
-
-      const articlesResponse = articles.map((article) => {
-        const topics = articlesTopics.filter((topicEvent) => {
-          if (topicEvent.id === article.articleId) {
-            delete topicEvent.id;
-            const topic = topicEvent.type;
-            return { topic };
-          }
-        });
-
-        return {
-          id: article.id,
-          article: {
-            title: article.title,
-            submission: article.userName,
-            topics,
-          },
-          event: {
-            name: article.eventName,
-            federation: article.federation,
-            deadline: article.deadline,
-          },
-        };
-      });
+      const articlesResponse = articles.map((article) => ({
+        id: article.id,
+        article: {
+          title: article.title,
+          submission: article.userName,
+        },
+        event: article.name,
+      }));
 
       res.status(200).json({
         error: false,
@@ -67,17 +51,22 @@ export default class ArticlesController {
       const articlesIds = await trx('articles').insert({
         title,
         member_id: memberId,
-        event_id: eventId,
       });
 
-      const articleTopoics = topics.map((topic) => {
-        return {
-          article_id: articlesIds,
-          topic_id: topic.id,
-        };
-      });
+      const articleTopoics = topics.map((topic) => ({
+        article_id: articlesIds,
+        topic_id: topic.id,
+      }));
 
       await trx('article_topics').insert(articleTopoics);
+      await trx('articles_events').insert({
+        article_id: articlesIds,
+        event_id: eventId,
+      });
+      await trx('actor_articles').insert({
+        actor_id: memberId,
+        article_id: articlesIds,
+      });
 
       await trx.commit();
 
