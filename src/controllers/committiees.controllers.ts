@@ -4,8 +4,7 @@ import db from '../database/database';
 
 export default class CommittieesControllers {
   async store(req: Request, res: Response) {
-    const coordenatorId = req.body.id;
-    const { appraisers, event, articles } = req.body;
+    const { coordenatorId, appraisers, event, articles } = req.body;
     const trx = await db.transaction();
 
     try {
