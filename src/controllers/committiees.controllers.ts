@@ -3,6 +3,36 @@ import { Request, Response } from 'express';
 import db from '../database/database';
 
 export default class CommittieesControllers {
+  async index(req: Request, res: Response) {
+    try {
+      const committees = await db('committiee_appraisers')
+        .join(
+          'committiees',
+          'committiees.id',
+          '=',
+          'committiee_appraisers.committiee_id',
+        )
+        .join(
+          'committiee_articles',
+          'committiee_articles.committiee_id',
+          '=',
+          'committiees.id',
+        )
+        .join('articles', 'articles.id', '=', 'committiee_articles.article_id')
+        .join('actors', 'actors.id', '=', 'committiee_articles.appraiser_id')
+        .join('users', 'users.id', '=', 'actors.user_id')
+        .select(['users.name', 'committiees.id', 'articles.title']);
+
+      res.status(200).json(committees);
+    } catch (err) {
+      console.log(`Error in INDEX of COMMITTIEE controllers ${err}`);
+      return res.status(500).json({
+        error: true,
+        message: 'Error',
+      });
+    }
+  }
+
   async store(req: Request, res: Response) {
     const { coordenatorId, appraisers, event, articles } = req.body;
     const trx = await db.transaction();
