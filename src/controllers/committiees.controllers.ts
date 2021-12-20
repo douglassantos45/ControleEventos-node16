@@ -90,10 +90,20 @@ export default class CommittieesControllers {
   async show(req: Request, res: Response) {
     const { id } = req.params;
     try {
-      const committiees = await db('committiees');
+      const [committiee] = await db('committiees').where(
+        'committiees.id',
+        '=',
+        id,
+      );
+
+      if (!committiee) {
+        return res.status(404).json({
+          error: false,
+          message: 'Committee not found!',
+        });
+      }
 
       const committieesAppraisers = await db('committiee_appraisers')
-        .where('committiee_appraisers.committiee_id', '=', id)
         .join(
           'committiees',
           'committiees.id',
@@ -109,10 +119,11 @@ export default class CommittieesControllers {
           'users.*',
         ]);
 
-      const committieesEvents = await db('committiee_events')
+      const [committieesEvents] = await db('committiee_events')
         .join('events', 'events.id', '=', 'committiee_events.event_id')
         .join('actors', 'actors.id', '=', 'events.coordenator_id')
         .join('users', 'users.id', '=', 'actors.user_id')
+        .where('committiee_events.committiee_id', '=', id)
         .select([
           { userName: 'users.name' },
           { eventName: 'events.name' },
@@ -120,51 +131,58 @@ export default class CommittieesControllers {
           'events.*',
         ]);
 
-      const coordenatorCommittiees = await db('committiees')
-        .join('actors', 'actors.id', '=', 'committiees.coordenator_id')
+      const committieeArticles = await db('committiee_articles')
+        .join('articles', 'articles.id', '=', 'committiee_articles.article_id')
+        .join('actors', 'actors.id', '=', 'articles.member_id')
         .join('users', 'users.id', '=', 'actors.user_id')
-        .select([{ committieeId: 'committiees.id' }, 'users.name']);
+        .join(
+          'committiees',
+          'committiees.id',
+          '=',
+          'committiee_articles.committiee_id',
+        )
+        .select([
+          'committiee_articles.committiee_id',
+          'articles.title',
+          'users.name',
+        ]);
 
-      const committeeResponse = committiees.map((committiee) => {
-        const appraisers = committieesAppraisers.filter(
-          (committieeAppraiser) => {
-            if (committiee.id === committieeAppraiser.committieeId) {
-              return { committieeAppraiser };
-            }
-          },
-        );
+      console.log(committieeArticles);
 
-        const committieeEvent = committieesEvents.filter((coordenatorEvent) => {
-          if (coordenatorEvent.committiee_id === committiee.id) {
-            return { coordenatorEvent };
-          }
-        });
+      const { userName, eventName, federation, start, end } = committieesEvents;
 
-        const [event] = committieeEvent.map((ev) => ({
-          name: ev.eventName,
-          coordenator: ev.userName,
-          start: ev.start,
-          final: ev.final,
-        }));
-
-        const [coordenatorCommittiee] = coordenatorCommittiees.map(
-          (coordenator) => ({
-            name: coordenator.name,
-          }),
-        );
-
-        return {
-          committiee: {
-            id: committiee.id,
-            coordenator: coordenatorCommittiee.name,
-            appraisers: appraisers.map((appraiser) => ({
-              name: appraiser.name,
-              type: appraiser.type,
-            })),
-            event,
-          },
-        };
+      const appraisers = committieesAppraisers.filter((committieeAppraiser) => {
+        if (committiee.id === committieeAppraiser.committieeId) {
+          return { committieeAppraiser };
+        }
       });
+
+      const articles = committieeArticles.filter((article) => {
+        if (committiee.id === article.committiee_id) {
+          return { article };
+        }
+      });
+
+      const committeeResponse = {
+        committiee: {
+          id: committiee.id,
+          appraisers: appraisers.map((appraiser) => ({
+            name: appraiser.name,
+            type: appraiser.type,
+          })),
+          articles: articles.map((article) => ({
+            name: article.name,
+            title: article.title,
+          })),
+          event: {
+            coordenator: userName,
+            name: eventName,
+            federation,
+            start,
+            end,
+          },
+        },
+      };
 
       res.status(200).json(committeeResponse);
     } catch (err) {
