@@ -5,25 +5,79 @@ import db from '../database/database';
 export default class CommittieesControllers {
   async index(req: Request, res: Response) {
     try {
-      const committees = await db('committiee_appraisers')
+      const committiees = await db('committiees');
+
+      const committieesAppraisers = await db('committiee_appraisers')
         .join(
           'committiees',
           'committiees.id',
           '=',
           'committiee_appraisers.committiee_id',
         )
-        .join(
-          'committiee_articles',
-          'committiee_articles.committiee_id',
-          '=',
-          'committiees.id',
-        )
-        .join('articles', 'articles.id', '=', 'committiee_articles.article_id')
-        .join('actors', 'actors.id', '=', 'committiee_articles.appraiser_id')
+        .join('actors', 'actors.id', '=', 'committiee_appraisers.appraiser_id')
         .join('users', 'users.id', '=', 'actors.user_id')
-        .select(['users.name', 'committiees.id', 'articles.title']);
+        .select([
+          { committieeId: 'committiees.id' },
+          { actorsId: 'actors.user_id' },
+          'actors.*',
+          'users.*',
+        ]);
 
-      res.status(200).json(committees);
+      const committieesEvents = await db('committiee_events')
+        .join('events', 'events.id', '=', 'committiee_events.event_id')
+        .join('actors', 'actors.id', '=', 'events.coordenator_id')
+        .join('users', 'users.id', '=', 'actors.user_id')
+        .select([
+          { userName: 'users.name' },
+          { eventName: 'events.name' },
+          'committiee_events.*',
+        ]);
+
+      const coordenatorCommittiees = await db('committiees')
+        .join('actors', 'actors.id', '=', 'committiees.coordenator_id')
+        .join('users', 'users.id', '=', 'actors.user_id')
+        .select([{ committieeId: 'committiees.id' }, 'users.name']);
+
+      const committeeResponse = committiees.map((committiee) => {
+        const appraisers = committieesAppraisers.filter(
+          (committieeAppraiser) => {
+            if (committiee.id === committieeAppraiser.committieeId) {
+              return { committieeAppraiser };
+            }
+          },
+        );
+
+        const committieeEvent = committieesEvents.filter((coordenatorEvent) => {
+          if (coordenatorEvent.committiee_id === committiee.id) {
+            return { coordenatorEvent };
+          }
+        });
+
+        const [event] = committieeEvent.map((ev) => ({
+          name: ev.eventName,
+          coordenator: ev.userName,
+        }));
+
+        const [coordenatorCommittiee] = coordenatorCommittiees.map(
+          (coordenator) => ({
+            name: coordenator.name,
+          }),
+        );
+
+        return {
+          committiee: {
+            id: committiee.id,
+            coordenator: coordenatorCommittiee.name,
+            appraisers: appraisers.map((appraiser) => ({
+              name: appraiser.name,
+              type: appraiser.type,
+            })),
+            event,
+          },
+        };
+      });
+
+      res.status(200).json(committeeResponse);
     } catch (err) {
       console.log(`Error in INDEX of COMMITTIEE controllers ${err}`);
       return res.status(500).json({
@@ -74,7 +128,7 @@ export default class CommittieesControllers {
       memberArticles.map((member) => {
         const memberName = appraisersIds.map((appraiserId) => {
           if (appraiserId === member.member_id) {
-            const name = member.name;
+            const { name } = member;
             return nameArray.push(name);
           }
         });
