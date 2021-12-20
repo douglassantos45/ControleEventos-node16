@@ -20,6 +20,7 @@ routes.delete('/users/:id', userController.remove);
 
 /* EVENTS */
 routes.get('/events', eventController.index);
+routes.get('/events/:id', eventController.show);
 routes.post('/events', eventController.store);
 /* END EVENTS */
 
