@@ -30,6 +30,7 @@ routes.post('/articles', articleController.store);
 
 /* COMMITTIEE */
 routes.get('/committiees', committieeController.index);
+routes.get('/committiees', committieeController.show);
 routes.post('/committiees', committieeController.store);
 /* END COMMITTIEE */
 
