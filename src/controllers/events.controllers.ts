@@ -81,7 +81,7 @@ export default class EventsController {
         .join('users', 'users.id', '=', 'actors.user_id')
         .select([{ committieeId: 'committiees.id' }, 'users.name']);
 
-      const committeeResponse = committiees.map((committiee) => {
+      const eventResponse = committiees.map((committiee) => {
         const appraisers = committieesAppraisers.filter(
           (committieeAppraiser) => {
             if (committiee.id === committieeAppraiser.committieeId) {
@@ -122,7 +122,7 @@ export default class EventsController {
         };
       });
 
-      res.status(200).json(committeeResponse);
+      res.status(200).json(eventResponse);
     } catch (err) {
       console.log(`Error in INDEX of COMMITTIEE controllers ${err}`);
       return res.status(500).json({
