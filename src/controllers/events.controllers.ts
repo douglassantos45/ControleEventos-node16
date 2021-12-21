@@ -47,8 +47,6 @@ export default class EventsController {
   async show(req: Request, res: Response) {
     const { id } = req.params;
     try {
-      const committiees = await db('committiees');
-
       const committieesAppraisers = await db('committiee_appraisers')
         .join(
           'committiees',
@@ -67,12 +65,14 @@ export default class EventsController {
 
       const committieesEvents = await db('committiee_events')
         .join('events', 'events.id', '=', 'committiee_events.event_id')
+        .where('events.id', '=', id)
         .join('actors', 'actors.id', '=', 'events.coordenator_id')
         .join('users', 'users.id', '=', 'actors.user_id')
-        .where('events.id', '=', id)
         .select([
           { userName: 'users.name' },
           { eventName: 'events.name' },
+          'events.*',
+          { committieeId: 'committiee_events.committiee_id' },
           'committiee_events.*',
         ]);
 
@@ -81,26 +81,29 @@ export default class EventsController {
         .join('users', 'users.id', '=', 'actors.user_id')
         .select([{ committieeId: 'committiees.id' }, 'users.name']);
 
-      const eventResponse = committiees.map((committiee) => {
+      const eventResponse = committieesEvents.map((committieesEvent) => {
         const appraisers = committieesAppraisers.filter(
           (committieeAppraiser) => {
-            if (committiee.id === committieeAppraiser.committieeId) {
+            if (
+              committieesEvent.committieeId === committieeAppraiser.committieeId
+            ) {
               return { committieeAppraiser };
             }
           },
         );
 
         const committieeEvent = committieesEvents.filter((coordenatorEvent) => {
-          if (coordenatorEvent.committiee_id === committiee.id) {
+          if (coordenatorEvent.committiee_id === committieesEvent.id) {
             return { coordenatorEvent };
           }
         });
 
         const [event] = committieeEvent.map((ev) => ({
+          id: ev.id,
           name: ev.eventName,
           coordenator: ev.userName,
           start: ev.start,
-          final: ev.final,
+          end: ev.end,
         }));
 
         const [coordenatorCommittiee] = coordenatorCommittiees.map(
@@ -110,14 +113,13 @@ export default class EventsController {
         );
 
         return {
+          event,
           committiee: {
-            id: committiee.id,
             coordenator: coordenatorCommittiee.name,
             appraisers: appraisers.map((appraiser) => ({
               name: appraiser.name,
               type: appraiser.type,
             })),
-            event,
           },
         };
       });
