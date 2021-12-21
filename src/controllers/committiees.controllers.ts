@@ -147,7 +147,10 @@ export default class CommittieesControllers {
           'users.name',
         ]);
 
-      console.log(committieeArticles);
+      const coordenatorCommittiees = await db('committiees')
+        .join('actors', 'actors.id', '=', 'committiees.coordenator_id')
+        .join('users', 'users.id', '=', 'actors.user_id')
+        .select([{ committieeId: 'committiees.id' }, 'users.name']);
 
       const { userName, eventName, federation, start, end } = committieesEvents;
 
@@ -163,15 +166,22 @@ export default class CommittieesControllers {
         }
       });
 
+      const [coordenatorCommittiee] = coordenatorCommittiees.map(
+        (coordenator) => ({
+          name: coordenator.name,
+        }),
+      );
+
       const committeeResponse = {
         committiee: {
           id: committiee.id,
+          coordenator: coordenatorCommittiee.name,
           appraisers: appraisers.map((appraiser) => ({
             name: appraiser.name,
             type: appraiser.type,
           })),
           articles: articles.map((article) => ({
-            name: article.name,
+            subimission: article.name,
             title: article.title,
           })),
           event: {
