@@ -47,84 +47,52 @@ export default class EventsController {
   async show(req: Request, res: Response) {
     const { id } = req.params;
     try {
-      const committieesAppraisers = await db('committiee_appraisers')
+      const [event] = await db('events').where('events.id', '=', id);
+      const committieesEvent = await db('committiee_events')
         .join(
           'committiees',
           'committiees.id',
           '=',
-          'committiee_appraisers.committiee_id',
+          'committiee_events.committiee_id',
         )
-        .join('actors', 'actors.id', '=', 'committiee_appraisers.appraiser_id')
-        .join('users', 'users.id', '=', 'actors.user_id')
-        .select([
-          { committieeId: 'committiees.id' },
-          { actorsId: 'actors.user_id' },
-          'actors.*',
-          'users.*',
-        ]);
-
-      const committieesEvents = await db('committiee_events')
         .join('events', 'events.id', '=', 'committiee_events.event_id')
-        .where('events.id', '=', id)
         .join('actors', 'actors.id', '=', 'events.coordenator_id')
-        .join('users', 'users.id', '=', 'actors.user_id')
-        .select([
-          { userName: 'users.name' },
-          { eventName: 'events.name' },
-          'events.*',
-          { committieeId: 'committiee_events.committiee_id' },
-          'committiee_events.*',
-        ]);
+        .join('users', 'users.id', '=', 'actors.user_id');
 
-      const coordenatorCommittiees = await db('committiees')
-        .join('actors', 'actors.id', '=', 'committiees.coordenator_id')
-        .join('users', 'users.id', '=', 'actors.user_id')
-        .select([{ committieeId: 'committiees.id' }, 'users.name']);
-
-      const eventResponse = committieesEvents.map((committieesEvent) => {
-        const appraisers = committieesAppraisers.filter(
-          (committieeAppraiser) => {
-            if (
-              committieesEvent.committieeId === committieeAppraiser.committieeId
-            ) {
-              return { committieeAppraiser };
-            }
-          },
-        );
-
-        const committieeEvent = committieesEvents.filter((coordenatorEvent) => {
-          if (coordenatorEvent.committiee_id === committieesEvent.id) {
-            return { coordenatorEvent };
-          }
+      if (!event) {
+        return res.status(404).json({
+          error: false,
+          message: 'Event not found!',
         });
+      }
 
-        const [event] = committieeEvent.map((ev) => ({
-          id: ev.id,
-          name: ev.eventName,
-          coordenator: ev.userName,
-          start: ev.start,
-          end: ev.end,
-        }));
-
-        const [coordenatorCommittiee] = coordenatorCommittiees.map(
-          (coordenator) => ({
-            name: coordenator.name,
-          }),
-        );
-
-        return {
-          event,
-          committiee: {
-            coordenator: coordenatorCommittiee.name,
-            appraisers: appraisers.map((appraiser) => ({
-              name: appraiser.name,
-              type: appraiser.type,
-            })),
-          },
-        };
+      const committiees = committieesEvent.filter((committieeEvent) => {
+        if (event.id === committieeEvent.event_id) {
+          return committieeEvent;
+        }
       });
 
-      res.status(200).json(eventResponse);
+      const committiee = committiees.map((committiee) => ({
+        id: committiee.committiee_id,
+        coordenator: committiee.name,
+        type: committiee.type,
+      }));
+
+      const { name, federation, deadline, start, end } = event;
+
+      const eventResponse = {
+        event: {
+          id: event.id,
+          name,
+          federation,
+          deadline,
+          start,
+          end,
+          committiee,
+        },
+      };
+
+      res.json(eventResponse);
     } catch (err) {
       console.log(`Error in INDEX of COMMITTIEE controllers ${err}`);
       return res.status(500).json({
