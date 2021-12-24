@@ -1,3 +1,4 @@
+/* eslint-disable no-shadow */
 import { Request, Response } from 'expres';
 import db from '../database/database';
 
@@ -59,6 +60,13 @@ export default class EventsController {
         .join('actors', 'actors.id', '=', 'events.coordenator_id')
         .join('users', 'users.id', '=', 'actors.user_id');
 
+      const committieeArticles = await db('committiee_articles').join(
+        'articles',
+        'articles.id',
+        '=',
+        'committiee_articles.article_id',
+      );
+
       if (!event) {
         return res.status(404).json({
           error: false,
@@ -72,11 +80,20 @@ export default class EventsController {
         }
       });
 
-      const committiee = committiees.map((committiee) => ({
-        id: committiee.committiee_id,
-        coordenator: committiee.name,
-        type: committiee.type,
-      }));
+      const committiee = committiees.map((committiee) => {
+        const articles = committieeArticles.filter((article) => {
+          if (article.committiee_id === committiee.committiee_id) {
+            return article;
+          }
+        });
+
+        return {
+          id: committiee.committiee_id,
+          coordenator: committiee.name,
+          type: committiee.type,
+          articles: articles.map((article) => ({ title: article.title })),
+        };
+      });
 
       const { name, federation, deadline, start, end } = event;
 
@@ -92,7 +109,7 @@ export default class EventsController {
         },
       };
 
-      res.json(eventResponse);
+      res.status(200).json(eventResponse);
     } catch (err) {
       console.log(`Error in INDEX of COMMITTIEE controllers ${err}`);
       return res.status(500).json({
