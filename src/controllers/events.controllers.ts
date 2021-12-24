@@ -143,12 +143,10 @@ export default class EventsController {
         coordenator_id: coordenatorId,
       });
 
-      const eventTopics = topics.map((topic) => {
-        return {
-          event_id: eventsId,
-          topic_id: topic.id,
-        };
-      });
+      const eventTopics = topics.map((topic) => ({
+        event_id: eventsId,
+        topic_id: topic.id,
+      }));
 
       await trx('event_topics').insert(eventTopics);
 
