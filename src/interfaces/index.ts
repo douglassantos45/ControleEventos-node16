@@ -8,6 +8,16 @@ export interface User {
   mail: string;
 }
 
+export interface Event {
+  id: number;
+  name: string;
+  federation: string;
+  deadline: string;
+  start: string;
+  end: string;
+  coordenator_id: number;
+}
+
 export interface Topic {
   id: number;
   type: string;
@@ -19,12 +29,45 @@ export interface Article {
   number_id: number;
 }
 
-export interface Event {
+export interface Institution {
   id: number;
   name: string;
-  federation: string;
-  deadline: string;
-  start: string;
-  end: string;
+  city: string;
+  country: string;
+  member_id: number;
+}
+
+export interface Committiee {
+  id: number;
   coordenator_id: number;
+}
+
+export interface Actor extends User {
+  type: string;
+  user_id: number;
+}
+
+export interface CommittieeAppraiser extends Committiee {
+  committiee_id: number;
+  appraiser_id: number;
+}
+
+export interface CommittieeArticle extends Article {
+  committiee_id: number;
+  article_id: number;
+}
+
+export interface CommittieeEvent extends Committiee, Event {
+  committiee_id: number;
+  event_id: number;
+}
+
+export interface EventTopic extends Event, Topic {
+  event_id: number;
+  topic_id: number;
+}
+
+export interface ArticleTopic extends Article, Topic {
+  article_id: number;
+  topic_id: number;
 }
