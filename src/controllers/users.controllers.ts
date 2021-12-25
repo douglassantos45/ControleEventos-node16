@@ -1,6 +1,8 @@
 import { Request, Response } from 'express';
 import db from '../database/database';
 
+import { Actor } from '../interfaces/index';
+
 export default class UserController {
   async index(req: Request, res: Response) {
     try {
@@ -10,7 +12,15 @@ export default class UserController {
 
       res.status(200).json({
         error: false,
-        data: users,
+        data: users.map((user: Actor) => ({
+          id: user.id,
+          name: user.name,
+          email: user.mail,
+          phone: user.phone,
+          cep: user.cep,
+          street: user.street,
+          type: user.type,
+        })),
       });
     } catch (err) {
       console.log(`Error in Index of USER controller ${err}`);
