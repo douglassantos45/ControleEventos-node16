@@ -1,6 +1,13 @@
 /* eslint-disable no-plusplus */
 import { Request, Response } from 'express';
 import db from '../database/database';
+import {
+  Actor,
+  Committiee,
+  CommittieeAppraiser,
+  CommittieeEvent,
+  Event,
+} from '../interfaces';
 
 export default class CommittieesControllers {
   async index(req: Request, res: Response) {
@@ -28,8 +35,8 @@ export default class CommittieesControllers {
         .join('actors', 'actors.id', '=', 'events.coordenator_id')
         .join('users', 'users.id', '=', 'actors.user_id')
         .select([
-          { userName: 'users.name' },
-          { eventName: 'events.name' },
+          { name: 'users.name' },
+          { name: 'events.name' },
           'committiee_events.*',
         ]);
 
@@ -38,28 +45,30 @@ export default class CommittieesControllers {
         .join('users', 'users.id', '=', 'actors.user_id')
         .select([{ committieeId: 'committiees.id' }, 'users.name']);
 
-      const committeeResponse = committiees.map((committiee) => {
+      const committeeResponse = committiees.map((committiee: Committiee) => {
         const appraisers = committieesAppraisers.filter(
-          (committieeAppraiser) => {
+          (committieeAppraiser: CommittieeAppraiser) => {
             if (committiee.id === committieeAppraiser.committieeId) {
               return { committieeAppraiser };
             }
           },
         );
 
-        const committieeEvent = committieesEvents.filter((coordenatorEvent) => {
-          if (coordenatorEvent.committiee_id === committiee.id) {
-            return { coordenatorEvent };
-          }
-        });
+        const committieeEvent = committieesEvents.filter(
+          (coordenatorEvent: CommittieeEvent) => {
+            if (coordenatorEvent.committieeId === committiee.id) {
+              return { coordenatorEvent };
+            }
+          },
+        );
 
-        const [event] = committieeEvent.map((ev) => ({
-          name: ev.eventName,
-          coordenator: ev.userName,
+        const [event] = committieeEvent.map((ev: Event) => ({
+          name: ev.name,
+          coordenator: ev.name,
         }));
 
         const [coordenatorCommittiee] = coordenatorCommittiees.map(
-          (coordenator) => ({
+          (coordenator: Actor) => ({
             name: coordenator.name,
           }),
         );
