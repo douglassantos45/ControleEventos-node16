@@ -60,6 +60,7 @@ export interface CommittieeArticle extends Article {
 export interface CommittieeEvent extends Committiee, Event {
   committiee_id: number;
   event_id: number;
+  [key: string]: any;
 }
 
 export interface EventTopic extends Event, Topic {

@@ -1,6 +1,7 @@
 /* eslint-disable no-shadow */
 import { Request, Response } from 'expres';
 import db from '../database/database';
+import { Event, EventTopic } from '../interfaces/index';
 
 export default class EventsController {
   async index(req: Request, res: Response) {
@@ -11,10 +12,9 @@ export default class EventsController {
         .join('topics', 'topics.id', '=', 'event_topics.topic_id')
         .select(['events.id', 'topics.type']);
 
-      const eventsResponse = events.map((event) => {
-        const topics = eventsTopics.filter((topicEvent) => {
+      const eventsResponse = events.map((event: Event) => {
+        const topics = eventsTopics.filter((topicEvent: EventTopic) => {
           if (topicEvent.id === event.id) {
-            delete topicEvent.id;
             const topic = topicEvent.type;
             return { topic };
           }
@@ -25,7 +25,9 @@ export default class EventsController {
           event: {
             name: event.name,
             federation: event.federation,
-            topics,
+            topics: topics.map((topic: EventTopic) => ({
+              type: topic.type,
+            })),
             start: event.start,
             end: event.end,
           },
