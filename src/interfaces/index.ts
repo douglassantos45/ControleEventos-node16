@@ -26,7 +26,7 @@ export interface Topic {
 export interface Article {
   id: number;
   title: string;
-  number_id: number;
+  numberId: number;
 }
 
 export interface Institution {
@@ -34,40 +34,40 @@ export interface Institution {
   name: string;
   city: string;
   country: string;
-  member_id: number;
+  memberId: number;
 }
 
 export interface Committiee {
   id: number;
-  coordenator_id: number;
+  coordenatorId: number;
 }
 
 export interface Actor extends User {
   type: string;
-  user_id: number;
+  userId: number;
 }
 
 export interface CommittieeAppraiser extends Committiee {
-  committiee_id: number;
-  appraiser_id: number;
+  committieeId: number;
+  appraiserId: number;
 }
 
 export interface CommittieeArticle extends Article {
-  committiee_id: number;
-  article_id: number;
+  committieeId: number;
+  articleId: number;
 }
 
 export interface CommittieeEvent extends Committiee, Event {
-  committiee_id: number;
-  event_id: number;
+  committieeId: number;
+  eventId: number;
 }
 
 export interface EventTopic extends Event, Topic {
-  event_id: number;
-  topic_id: number;
+  eventId: number;
+  topicId: number;
 }
 
 export interface ArticleTopic extends Article, Topic {
-  article_id: number;
-  topic_id: number;
+  articleId: number;
+  topicId: number;
 }
