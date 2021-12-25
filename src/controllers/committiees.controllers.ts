@@ -1,3 +1,4 @@
+/* eslint-disable max-len */
 /* eslint-disable no-plusplus */
 import { Request, Response } from 'express';
 import db from '../database/database';
@@ -5,8 +6,8 @@ import {
   Actor,
   Committiee,
   CommittieeAppraiser,
+  CommittieeArticle,
   CommittieeEvent,
-  Event,
 } from '../interfaces';
 
 export default class CommittieesControllers {
@@ -35,8 +36,9 @@ export default class CommittieesControllers {
         .join('actors', 'actors.id', '=', 'events.coordenator_id')
         .join('users', 'users.id', '=', 'actors.user_id')
         .select([
-          { name: 'users.name' },
-          { name: 'events.name' },
+          { userName: 'users.name' },
+          { eventName: 'events.name' },
+          { committieeId: 'committiee_events.committiee_id' },
           'committiee_events.*',
         ]);
 
@@ -55,16 +57,16 @@ export default class CommittieesControllers {
         );
 
         const committieeEvent = committieesEvents.filter(
-          (coordenatorEvent: CommittieeEvent) => {
-            if (coordenatorEvent.committieeId === committiee.id) {
-              return { coordenatorEvent };
+          (event: CommittieeEvent) => {
+            if (event.committieeId === committiee.id) {
+              return { event };
             }
           },
         );
 
-        const [event] = committieeEvent.map((ev: Event) => ({
-          name: ev.name,
-          coordenator: ev.name,
+        const [event] = committieeEvent.map((ev) => ({
+          name: ev.eventName,
+          coordenator: ev.userName,
         }));
 
         const [coordenatorCommittiee] = coordenatorCommittiees.map(
@@ -151,7 +153,7 @@ export default class CommittieesControllers {
           'committiee_articles.committiee_id',
         )
         .select([
-          'committiee_articles.committiee_id',
+          { committieeId: 'committiee_articles.committiee_id' },
           'articles.title',
           'users.name',
         ]);
@@ -163,20 +165,24 @@ export default class CommittieesControllers {
 
       const { userName, eventName, federation, start, end } = committieesEvents;
 
-      const appraisers = committieesAppraisers.filter((committieeAppraiser) => {
-        if (committiee.id === committieeAppraiser.committieeId) {
-          return { committieeAppraiser };
-        }
-      });
+      const appraisers = committieesAppraisers.filter(
+        (committieeAppraiser: CommittieeAppraiser) => {
+          if (committiee.id === committieeAppraiser.committieeId) {
+            return { committieeAppraiser };
+          }
+        },
+      );
 
-      const articles = committieeArticles.filter((article) => {
-        if (committiee.id === article.committiee_id) {
-          return { article };
-        }
-      });
+      const articles = committieeArticles.filter(
+        (article: CommittieeArticle) => {
+          if (committiee.id === article.committieeId) {
+            return { article };
+          }
+        },
+      );
 
       const [coordenatorCommittiee] = coordenatorCommittiees.map(
-        (coordenator) => ({
+        (coordenator: Actor) => ({
           name: coordenator.name,
         }),
       );
