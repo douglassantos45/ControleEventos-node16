@@ -1,7 +1,14 @@
 /* eslint-disable no-shadow */
 import { Request, Response } from 'expres';
 import db from '../database/database';
-import { Event, EventTopic } from '../interfaces/index';
+import {
+  Event,
+  EventTopic,
+  Committiee,
+  CommittieeEvent,
+  CommittieeArticle,
+  Article,
+} from '../interfaces/index';
 
 export default class EventsController {
   async index(req: Request, res: Response) {
@@ -76,24 +83,30 @@ export default class EventsController {
         });
       }
 
-      const committiees = committieesEvent.filter((committieeEvent) => {
-        if (event.id === committieeEvent.event_id) {
-          return committieeEvent;
-        }
-      });
-
-      const committiee = committiees.map((committiee) => {
-        const articles = committieeArticles.filter((article) => {
-          if (article.committiee_id === committiee.committiee_id) {
-            return article;
+      const committiees = committieesEvent.filter(
+        (committieeEvent: CommittieeEvent) => {
+          if (event.id === committieeEvent.event_id) {
+            return committieeEvent;
           }
-        });
+        },
+      );
+
+      const committieeEvent = committiees.map((committiee: CommittieeEvent) => {
+        const articles = committieeArticles.filter(
+          (article: CommittieeArticle) => {
+            if (article.committiee_id === committiee.committiee_id) {
+              return article;
+            }
+          },
+        );
 
         return {
           id: committiee.committiee_id,
           coordenator: committiee.name,
           type: committiee.type,
-          articles: articles.map((article) => ({ title: article.title })),
+          articles: articles.map((article: Article) => ({
+            title: article.title,
+          })),
         };
       });
 
@@ -107,7 +120,7 @@ export default class EventsController {
           deadline,
           start,
           end,
-          committiee,
+          committieeEvent,
         },
       };
 
@@ -145,7 +158,7 @@ export default class EventsController {
         coordenator_id: coordenatorId,
       });
 
-      const eventTopics = topics.map((topic) => ({
+      const eventTopics = topics.map((topic: EventTopic) => ({
         event_id: eventsId,
         topic_id: topic.id,
       }));
