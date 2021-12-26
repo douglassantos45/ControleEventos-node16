@@ -71,3 +71,13 @@ export interface ArticleTopic extends Article, Topic {
   articleId: number;
   topicId: number;
 }
+
+export interface ArticleEvent extends Article, Event {
+  articleId: number;
+  eventId: number;
+}
+
+export interface ActorArticle extends Actor, Article {
+  actorId: number;
+  articleId: number;
+}
