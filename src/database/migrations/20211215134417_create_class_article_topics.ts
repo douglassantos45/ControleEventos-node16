@@ -1,36 +1,36 @@
 import { Knex } from 'knex';
 
 export async function up(knex: Knex): Promise<void> {
-  return knex.schema.createTable('article_topics', (table) => {
+  return knex.schema.createTable('ARTICLE_TOPICS', (table) => {
     table.increments('id').notNullable();
 
     table
-      .integer('article_id')
+      .integer('articleId')
       .notNullable()
       .references('id')
-      .inTable('articles')
+      .inTable('ARTICLES')
       .onUpdate('CASCADE')
       .onDelete('CASCADE');
 
     table
-      .integer('topic_id')
+      .integer('topicId')
       .notNullable()
       .references('id')
-      .inTable('topics')
+      .inTable('TOPICS')
       .onUpdate('CASCADE')
       .onDelete('CASCADE');
 
     table
-      .timestamp('created_at')
+      .timestamp('createdAt')
       .defaultTo(knex.raw('CURRENT_TIMESTAMP'))
       .notNullable();
     table
-      .timestamp('updated_at')
+      .timestamp('updatedAt')
       .defaultTo(knex.raw('CURRENT_TIMESTAMP'))
       .notNullable();
   });
 }
 
 export async function down(knex: Knex): Promise<void> {
-  return knex.schema.dropTable('article_topics');
+  return knex.schema.dropTable('ARTICLE_TOPICS');
 }

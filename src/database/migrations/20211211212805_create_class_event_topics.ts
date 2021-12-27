@@ -1,36 +1,36 @@
 import { Knex } from 'knex';
 
 export async function up(knex: Knex): Promise<void> {
-  return knex.schema.createTable('event_topics', (table) => {
+  return knex.schema.createTable('EVENT_TOPICS', (table) => {
     table.increments('id').notNullable();
 
     table
-      .integer('event_id')
+      .integer('eventId')
       .notNullable()
       .references('id')
-      .inTable('events')
+      .inTable('EVENTS')
       .onUpdate('CASCADE')
       .onDelete('CASCADE');
 
     table
-      .integer('topic_id')
+      .integer('topicId')
       .notNullable()
       .references('id')
-      .inTable('topics')
+      .inTable('TOPICS')
       .onUpdate('CASCADE')
       .onDelete('CASCADE');
 
     table
-      .timestamp('created_at')
+      .timestamp('createdAt')
       .defaultTo(knex.raw('CURRENT_TIMESTAMP'))
       .notNullable();
     table
-      .timestamp('updated_at')
+      .timestamp('updatedAt')
       .defaultTo(knex.raw('CURRENT_TIMESTAMP'))
       .notNullable();
   });
 }
 
 export async function down(knex: Knex): Promise<void> {
-  return knex.schema.dropTable('event_topics');
+  return knex.schema.dropTable('EVENT_TOPICS');
 }

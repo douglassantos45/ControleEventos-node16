@@ -1,36 +1,36 @@
 import { Knex } from 'knex';
 
 export async function up(knex: Knex): Promise<void> {
-  return knex.schema.createTable('committiee_appraisers', (table) => {
+  return knex.schema.createTable('COMMITTIEE_AVALIATOR', (table) => {
     table.increments('id').notNullable();
 
     table
-      .integer('committiee_id')
+      .integer('committieeId')
       .notNullable()
       .references('id')
-      .inTable('committiees')
+      .inTable('COMMITTIEES')
       .onUpdate('CASCADE')
       .onDelete('CASCADE');
 
     table
-      .integer('appraiser_id')
+      .integer('actorId')
       .notNullable()
       .references('id')
-      .inTable('actors')
+      .inTable('ACTORES')
       .onUpdate('CASCADE')
       .onDelete('CASCADE');
 
     table
-      .timestamp('created_at')
+      .timestamp('createdAt')
       .defaultTo(knex.raw('CURRENT_TIMESTAMP'))
       .notNullable();
     table
-      .timestamp('updated_at')
+      .timestamp('updatedAt')
       .defaultTo(knex.raw('CURRENT_TIMESTAMP'))
       .notNullable();
   });
 }
 
 export async function down(knex: Knex): Promise<void> {
-  return knex.schema.dropTable('committiee_appraisers');
+  return knex.schema.dropTable('COMMITTIEE_AVALIATOR');
 }

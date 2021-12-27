@@ -1,22 +1,21 @@
 import { Knex } from 'knex';
 
 export async function up(knex: Knex): Promise<void> {
-  return knex.schema.createTable('COMMITTIEES_EVENTS', (table) => {
+  return knex.schema.createTable('AUTHOR_ARTICLES', (table) => {
     table.increments('id').notNullable();
 
     table
-      .integer('committieeId')
+      .integer('actorId')
       .notNullable()
       .references('id')
-      .inTable('COMMITTIEES')
+      .inTable('ACTORS')
       .onUpdate('CASCADE')
       .onDelete('CASCADE');
-
     table
-      .integer('eventId')
+      .integer('articleId')
       .notNullable()
       .references('id')
-      .inTable('EVENTS')
+      .inTable('ARTICLES')
       .onUpdate('CASCADE')
       .onDelete('CASCADE');
 
@@ -32,5 +31,5 @@ export async function up(knex: Knex): Promise<void> {
 }
 
 export async function down(knex: Knex): Promise<void> {
-  return knex.schema.dropTable('COMMITTIEE_EVENTS');
+  return knex.schema.dropTable('AUTHOR_ARTICLES');
 }
