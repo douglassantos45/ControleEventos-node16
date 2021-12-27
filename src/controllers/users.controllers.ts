@@ -6,9 +6,9 @@ import { Actor } from '../interfaces/index';
 export default class UserController {
   async index(req: Request, res: Response) {
     try {
-      const users = await db('actors')
-        .join('users', 'users.id', '=', 'actors.user_id')
-        .select(['actors.type', 'users.*']);
+      const users = await db('ACTORS')
+        .join('USERS', 'USERS.id', '=', 'ACTORS.userId')
+        .select(['ACTORS.type', 'USERS.*']);
 
       res.status(200).json({
         error: false,
@@ -32,22 +32,23 @@ export default class UserController {
   }
 
   async store(req: Request, res: Response) {
-    const { name, genus, cep, street, phone, mail, type } = req.body;
+    const { name, genus, cep, street, phone, mail, password, type } = req.body;
     const trx = await db.transaction();
 
     try {
-      const usersId = await trx('users').insert({
+      const usersId = await trx('USERS').insert({
         name,
         genus,
         cep,
         street,
         phone,
         mail,
+        password,
       });
 
-      await trx('actors').insert({
+      await trx('ACTORS').insert({
         type,
-        user_id: usersId,
+        userId: usersId,
       });
 
       await trx.commit();
@@ -69,7 +70,7 @@ export default class UserController {
 
     const data = req.body;
     try {
-      const [user] = await db('users').where('id', '=', id);
+      const [user] = await db('USERS').where('id', '=', id);
 
       if (!user) {
         return res.status(404).json({
@@ -78,7 +79,7 @@ export default class UserController {
         });
       }
 
-      await db('users').where('id', '=', id).update(data);
+      await db('USERS').where('id', '=', id).update(data);
 
       return res.status(201).json({
         error: false,
@@ -96,7 +97,7 @@ export default class UserController {
   async remove(req: Request, res: Response) {
     const { id } = req.params;
     try {
-      const [user] = await db('users').where('id', '=', id);
+      const [user] = await db('USERS').where('id', '=', id);
 
       if (!user) {
         return res.status(404).json({
@@ -105,7 +106,7 @@ export default class UserController {
         });
       }
 
-      await db('users').where('id', '=', id).del();
+      await db('USERS').where('id', '=', id).del();
 
       res.status(200).json({
         error: false,

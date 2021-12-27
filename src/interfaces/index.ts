@@ -47,9 +47,9 @@ export interface Actor extends User {
   userId: number;
 }
 
-export interface CommittieeAppraiser extends Committiee, Actor {
+export interface CommittieeAvaliator extends Committiee, Actor {
   committieeId: number;
-  appraiserId: number;
+  avaliatorId: number;
   [key: string]: any;
 }
 

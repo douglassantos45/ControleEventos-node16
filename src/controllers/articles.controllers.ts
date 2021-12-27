@@ -5,24 +5,24 @@ import { ArticleEvent, ArticleTopic } from '../interfaces';
 export default class ArticlesController {
   async index(req: Request, res: Response) {
     try {
-      const articles = await db('articles_events')
-        .join('events', 'events.id', '=', 'articles_events.event_id')
+      const articles = await db('ARTICLE_EVENTS')
+        .join('EVENTS', 'EVENTS.id', '=', 'ARTICLE_EVENTS.eventId')
         .join(
-          'actor_articles',
-          'actor_articles.article_id',
+          'AUTHOR_ARTICLES',
+          'AUTHOR_ARTICLES.articleId',
           '=',
-          'articles_events.article_id',
+          'ARTICLE_EVENTS.articleId',
         )
-        .join('articles', 'articles.id', '=', 'actor_articles.article_id')
-        .join('actors', 'actors.id', '=', 'articles.member_id')
-        .join('users', 'users.id', '=', 'actors.user_id')
+        .join('ARTICLES', 'ARTICLES.id', '=', 'AUTHOR_ARTICLES.articleId')
+        .join('ACTORS', 'ACTORS.id', '=', 'ARTICLES.actorId')
+        .join('USERS', 'USERS.id', '=', 'ACTORS.userId')
         .select([
-          'events.name',
-          'articles.id',
-          'articles.title',
-          { userName: 'users.name' },
+          'EVENTS.name',
+          'ARTICLES.id',
+          'ARTICLES.title',
+          { userName: 'USERS.name' },
         ]);
-
+      console.log(articles);
       const articlesResponse = articles.map((article: ArticleEvent) => ({
         id: article.id,
         article: {
@@ -46,27 +46,27 @@ export default class ArticlesController {
   }
 
   async store(req: Request, res: Response) {
-    const { title, memberId, eventId, topics } = req.body;
+    const { title, actorId, eventId, topics } = req.body;
     const trx = await db.transaction();
     try {
-      const articlesIds = await trx('articles').insert({
+      const articlesIds = await trx('ARTICLES').insert({
         title,
-        member_id: memberId,
+        actorId,
       });
 
       const articleTopoics = topics.map((topic: ArticleTopic) => ({
-        article_id: articlesIds,
-        topic_id: topic.id,
+        articleId: articlesIds,
+        topicId: topic.id,
       }));
 
-      await trx('article_topics').insert(articleTopoics);
-      await trx('articles_events').insert({
-        article_id: articlesIds,
-        event_id: eventId,
+      await trx('ARTICLE_TOPICS').insert(articleTopoics);
+      await trx('ARTICLE_EVENTS').insert({
+        articleId: articlesIds,
+        eventId,
       });
-      await trx('actor_articles').insert({
-        actor_id: memberId,
-        article_id: articlesIds,
+      await trx('AUTHOR_ARTICLES').insert({
+        actorId,
+        articleId: articlesIds,
       });
 
       await trx.commit();

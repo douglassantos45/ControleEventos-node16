@@ -13,11 +13,11 @@ import {
 export default class EventsController {
   async index(req: Request, res: Response) {
     try {
-      const events = await db('events');
-      const eventsTopics = await db('event_topics')
-        .join('events', 'events.id', '=', 'event_topics.event_id')
-        .join('topics', 'topics.id', '=', 'event_topics.topic_id')
-        .select(['events.id', 'topics.type']);
+      const events = await db('EVENTS');
+      const eventsTopics = await db('EVENT_TOPICS')
+        .join('EVENTS', 'EVENTS.id', '=', 'EVENT_TOPICS.eventId')
+        .join('topics', 'topics.id', '=', 'EVENT_TOPICS.topicId')
+        .select(['EVENTS.id', 'topics.type']);
 
       const eventsResponse = events.map((event: Event) => {
         const topics = eventsTopics.filter((topicEvent: EventTopic) => {
@@ -57,23 +57,23 @@ export default class EventsController {
   async show(req: Request, res: Response) {
     const { id } = req.params;
     try {
-      const [event] = await db('events').where('events.id', '=', id);
-      const committieesEvent = await db('committiee_events')
+      const [event] = await db('EVENTS').where('EVENTS.id', '=', id);
+      const committieesEvent = await db('COMMITTIEES_EVENTS')
         .join(
-          'committiees',
-          'committiees.id',
+          'COMMITTIEES',
+          'COMMITTIEES.id',
           '=',
-          'committiee_events.committiee_id',
+          'COMMITTIEES_EVENTS.committieeId',
         )
-        .join('events', 'events.id', '=', 'committiee_events.event_id')
-        .join('actors', 'actors.id', '=', 'events.coordenator_id')
-        .join('users', 'users.id', '=', 'actors.user_id');
+        .join('EVENTS', 'EVENTS.id', '=', 'COMMITTIEES_EVENTS.eventId')
+        .join('ACTORS', 'ACTORS.id', '=', 'EVENTS.coordenatorId')
+        .join('USERS', 'USERS.id', '=', 'ACTORS.userId');
 
-      const committieeArticles = await db('committiee_articles').join(
-        'articles',
-        'articles.id',
+      const committieeArticles = await db('COMMITTIEE_ARTICLES').join(
+        'ARTICLES',
+        'ARTICLES.id',
         '=',
-        'committiee_articles.article_id',
+        'COMMITTIEE_ARTICLES.articleId',
       );
 
       if (!event) {
@@ -85,7 +85,7 @@ export default class EventsController {
 
       const committiees = committieesEvent.filter(
         (committieeEvent: CommittieeEvent) => {
-          if (event.id === committieeEvent.event_id) {
+          if (event.id === committieeEvent.eventId) {
             return committieeEvent;
           }
         },
@@ -94,14 +94,14 @@ export default class EventsController {
       const committieeEvent = committiees.map((committiee: CommittieeEvent) => {
         const articles = committieeArticles.filter(
           (article: CommittieeArticle) => {
-            if (article.committiee_id === committiee.committiee_id) {
+            if (article.committieeId === committiee.committieeId) {
               return article;
             }
           },
         );
 
         return {
-          id: committiee.committiee_id,
+          id: committiee.committieeId,
           coordenator: {
             name: committiee.name,
           },
@@ -141,7 +141,7 @@ export default class EventsController {
 
     const trx = await db.transaction();
     try {
-      const [event] = await trx('events').where('name', '=', name);
+      const [event] = await trx('EVENTS').where('name', '=', name);
       if (event) {
         await trx.rollback();
         return res.status(401).json({
@@ -150,21 +150,21 @@ export default class EventsController {
         });
       }
 
-      const eventsId = await trx('events').insert({
+      const eventsId = await trx('EVENTS').insert({
         name,
         federation,
         deadline,
         start,
         end,
-        coordenator_id: coordenatorId,
+        coordenatorId,
       });
 
       const eventTopics = topics.map((topic: EventTopic) => ({
-        event_id: eventsId,
-        topic_id: topic.id,
+        eventId: eventsId,
+        topicId: topic.id,
       }));
 
-      await trx('event_topics').insert(eventTopics);
+      await trx('EVENT_TOPICS').insert(eventTopics);
 
       await trx.commit();
       res.status(200).json({
