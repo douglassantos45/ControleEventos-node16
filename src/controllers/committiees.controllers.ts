@@ -7,7 +7,7 @@ import {
   ActorArticle,
   Article,
   Committiee,
-  CommittieeAppraiser,
+  CommittieeAvaliator,
   CommittieeArticle,
   CommittieeEvent,
 } from '../interfaces';
@@ -15,45 +15,45 @@ import {
 export default class CommittieesControllers {
   async index(req: Request, res: Response) {
     try {
-      const committiees = await db('committiees');
+      const committiees = await db('COMMITTIEES');
 
-      const committieesAppraisers = await db('committiee_appraisers')
+      const committieesAvaliators = await db('COMMITTIEE_AVALIATOR')
         .join(
-          'committiees',
-          'committiees.id',
+          'COMMITTIEES',
+          'COMMITTIEES.id',
           '=',
-          'committiee_appraisers.committiee_id',
+          'COMMITTIEE_AVALIATOR.committieeId',
         )
-        .join('actors', 'actors.id', '=', 'committiee_appraisers.appraiser_id')
-        .join('users', 'users.id', '=', 'actors.user_id')
+        .join('ACTORS', 'ACTORS.id', '=', 'COMMITTIEE_AVALIATOR.actorId')
+        .join('USERS', 'USERS.id', '=', 'ACTORS.userId')
         .select([
-          { committieeId: 'committiees.id' },
-          { actorsId: 'actors.user_id' },
-          'actors.*',
-          'users.*',
+          { committieeId: 'COMMITTIEES.id' },
+          { actorsId: 'ACTORS.userId' },
+          'ACTORS.*',
+          'USERS.*',
         ]);
 
-      const committieesEvents = await db('committiee_events')
-        .join('events', 'events.id', '=', 'committiee_events.event_id')
-        .join('actors', 'actors.id', '=', 'events.coordenator_id')
-        .join('users', 'users.id', '=', 'actors.user_id')
+      const committieesEvents = await db('COMMITTIEES_EVENTS')
+        .join('EVENTS', 'EVENTS.id', '=', 'COMMITTIEES_EVENTS.eventId')
+        .join('ACTORS', 'ACTORS.id', '=', 'EVENTS.coordenatorId')
+        .join('USERS', 'USERS.id', '=', 'ACTORS.userId')
         .select([
-          { userName: 'users.name' },
-          { eventName: 'events.name' },
-          { committieeId: 'committiee_events.committiee_id' },
-          'committiee_events.*',
+          { userName: 'USERS.name' },
+          { eventName: 'EVENTS.name' },
+          { committieeId: 'COMMITTIEES_EVENTS.committieeId' },
+          'COMMITTIEES_EVENTS.*',
         ]);
 
-      const coordenatorCommittiees = await db('committiees')
-        .join('actors', 'actors.id', '=', 'committiees.coordenator_id')
-        .join('users', 'users.id', '=', 'actors.user_id')
-        .select([{ committieeId: 'committiees.id' }, 'users.name']);
+      const coordenatorCommittiees = await db('COMMITTIEES')
+        .join('ACTORS', 'ACTORS.id', '=', 'committiees.coordenatorId')
+        .join('USERS', 'USERS.id', '=', 'ACTORS.userId')
+        .select([{ committieeId: 'committiees.id' }, 'USERS.name']);
 
       const committeeResponse = committiees.map((committiee: Committiee) => {
-        const appraisers = committieesAppraisers.filter(
-          (committieeAppraiser: CommittieeAppraiser) => {
-            if (committiee.id === committieeAppraiser.committieeId) {
-              return { committieeAppraiser };
+        const avaliators = committieesAvaliators.filter(
+          (committieeAvaliator: CommittieeAvaliator) => {
+            if (committiee.id === committieeAvaliator.committieeId) {
+              return { committieeAvaliator };
             }
           },
         );
@@ -81,9 +81,9 @@ export default class CommittieesControllers {
           committiee: {
             id: committiee.id,
             coordenator: coordenatorCommittiee.name,
-            appraisers: appraisers.map((appraiser) => ({
-              name: appraiser.name,
-              type: appraiser.type,
+            Avaliators: avaliators.map((avaliator) => ({
+              name: avaliator.name,
+              type: avaliator.type,
             })),
             event,
           },
@@ -103,8 +103,8 @@ export default class CommittieesControllers {
   async show(req: Request, res: Response) {
     const { id } = req.params;
     try {
-      const [committiee] = await db('committiees').where(
-        'committiees.id',
+      const [committiee] = await db('COMMITTIEES').where(
+        'COMMITTIEES.id',
         '=',
         id,
       );
@@ -116,61 +116,61 @@ export default class CommittieesControllers {
         });
       }
 
-      const committieesAppraisers = await db('committiee_appraisers')
+      const committieesAvaliators = await db('COMMITTIEE_AVALIATOR')
         .join(
-          'committiees',
-          'committiees.id',
+          'COMMITTIEES',
+          'COMMITTIEES.id',
           '=',
-          'committiee_appraisers.committiee_id',
+          'COMMITTIEE_AVALIATOR.committieeId',
         )
-        .join('actors', 'actors.id', '=', 'committiee_appraisers.appraiser_id')
-        .join('users', 'users.id', '=', 'actors.user_id')
+        .join('ACTORS', 'ACTORS.id', '=', 'COMMITTIEE_AVALIATOR.actorId')
+        .join('USERS', 'USERS.id', '=', 'ACTORS.userId')
         .select([
-          { committieeId: 'committiees.id' },
-          { actorsId: 'actors.user_id' },
-          'actors.*',
-          'users.*',
+          { committieeId: 'COMMITTIEES.id' },
+          { actorsId: 'ACTORS.userId' },
+          'ACTORS.*',
+          'USERS.*',
         ]);
 
-      const [committieesEvents] = await db('committiee_events')
-        .join('events', 'events.id', '=', 'committiee_events.event_id')
-        .join('actors', 'actors.id', '=', 'events.coordenator_id')
-        .join('users', 'users.id', '=', 'actors.user_id')
-        .where('committiee_events.committiee_id', '=', id)
+      const [committieesEvents] = await db('COMMITTIEES_EVENTS')
+        .join('EVENTS', 'EVENTS.id', '=', 'COMMITTIEES_EVENTS.eventId')
+        .join('ACTORS', 'ACTORS.id', '=', 'EVENTS.coordenatorId')
+        .join('USERS', 'USERS.id', '=', 'ACTORS.userId')
+        .where('COMMITTIEES_EVENTS.committieeId', '=', id)
         .select([
-          { userName: 'users.name' },
-          { eventName: 'events.name' },
-          'committiee_events.*',
-          'events.*',
+          { userName: 'USERS.name' },
+          { eventName: 'EVENTS.name' },
+          'COMMITTIEES_EVENTS.*',
+          'EVENTS.*',
         ]);
 
-      const committieeArticles = await db('committiee_articles')
-        .join('articles', 'articles.id', '=', 'committiee_articles.article_id')
-        .join('actors', 'actors.id', '=', 'articles.member_id')
-        .join('users', 'users.id', '=', 'actors.user_id')
+      const committieeArticles = await db('COMMITTIEE_ARTICLES')
+        .join('ARTICLES', 'ARTICLES.id', '=', 'COMMITTIEE_ARTICLES.articleId')
+        .join('ACTORS', 'ACTORS.id', '=', 'ARTICLES.actorId')
+        .join('USERS', 'USERS.id', '=', 'ACTORS.userId')
         .join(
-          'committiees',
-          'committiees.id',
+          'COMMITTIEES',
+          'COMMITTIEES.id',
           '=',
-          'committiee_articles.committiee_id',
+          'COMMITTIEE_ARTICLES.committieeId',
         )
         .select([
-          { committieeId: 'committiee_articles.committiee_id' },
-          'articles.title',
-          'users.name',
+          { committieeId: 'COMMITTIEE_ARTICLES.committieeId' },
+          'ARTICLES.title',
+          'USERS.name',
         ]);
 
-      const coordenatorCommittiees = await db('committiees')
-        .join('actors', 'actors.id', '=', 'committiees.coordenator_id')
-        .join('users', 'users.id', '=', 'actors.user_id')
-        .select([{ committieeId: 'committiees.id' }, 'users.name']);
+      const coordenatorCommittiees = await db('COMMITTIEES')
+        .join('ACTORS', 'ACTORS.id', '=', 'COMMITTIEES.coordenatorId')
+        .join('USERS', 'USERS.id', '=', 'ACTORS.userId')
+        .select([{ committieeId: 'COMMITTIEES.id' }, 'USERS.name']);
 
       const { userName, eventName, federation, start, end } = committieesEvents;
 
-      const appraisers = committieesAppraisers.filter(
-        (committieeAppraiser: CommittieeAppraiser) => {
-          if (committiee.id === committieeAppraiser.committieeId) {
-            return { committieeAppraiser };
+      const avaliators = committieesAvaliators.filter(
+        (committieeAvaliator: CommittieeAvaliator) => {
+          if (committiee.id === committieeAvaliator.committieeId) {
+            return { committieeAvaliator };
           }
         },
       );
@@ -193,9 +193,9 @@ export default class CommittieesControllers {
         committiee: {
           id: committiee.id,
           coordenator: coordenatorCommittiee.name,
-          appraisers: appraisers.map((appraiser) => ({
-            name: appraiser.name,
-            type: appraiser.type,
+          avaliators: avaliators.map((avaliator) => ({
+            name: avaliator.name,
+            type: avaliator.type,
           })),
           articles: articles.map((article) => ({
             subimission: article.name,
@@ -222,60 +222,59 @@ export default class CommittieesControllers {
   }
 
   async store(req: Request, res: Response) {
-    const { coordenatorId, appraisers, event, articles } = req.body;
+    const { coordenatorId, avaliatorsId, eventId, articlesId } = req.body;
     const trx = await db.transaction();
 
     try {
-      const committieeId = await trx('committiees').insert({
-        coordenator_id: coordenatorId,
+      const committieeId = await trx('COMMITTIEES').insert({
+        coordenatorId,
       });
-
-      const committieeApraisers = appraisers.map(
-        (appraiser: CommittieeAppraiser) => ({
-          committiee_id: committieeId,
-          appraiser_id: appraiser.id,
+      const committieeAvaliators = avaliatorsId.map(
+        (avaliator: CommittieeAvaliator) => ({
+          committieeId,
+          actorId: avaliator.id,
         }),
       );
 
-      const memberArticles = await trx('articles_events')
-        .join('events', 'events.id', '=', 'articles_events.event_id')
+      const authorArticles = await trx('ARTICLE_EVENTS')
+        .join('EVENTS', 'EVENTS.id', '=', 'ARTICLE_EVENTS.eventId')
         .join(
-          'actor_articles',
-          'actor_articles.article_id',
+          'AUTHOR_ARTICLES',
+          'AUTHOR_ARTICLES.articleId',
           '=',
-          'articles_events.article_id',
+          'ARTICLE_EVENTS.articleId',
         )
-        .join('articles', 'articles.id', '=', 'actor_articles.article_id')
-        .join('actors', 'actors.id', '=', 'articles.member_id')
-        .join('users', 'users.id', '=', 'actors.user_id')
-        .where('events.id', '=', event)
-        .select(['users.name', 'articles.member_id']);
+        .join('ARTICLES', 'ARTICLES.id', '=', 'AUTHOR_ARTICLES.articleId')
+        .join('ACTORS', 'ACTORS.id', '=', 'ARTICLES.actorId')
+        .join('USERS', 'USERS.id', '=', 'ACTORS.userId')
+        .where('EVENTS.id', '=', eventId)
+        .select(['USERS.name', 'ARTICLES.actorId']);
 
-      const appraisersIds = committieeApraisers.map(
-        (appraiser: CommittieeAppraiser) => appraiser.appraiser_id,
+      const avaliatorsIds = committieeAvaliators.map(
+        (avaliator: CommittieeAvaliator) => avaliator.actorId,
       );
-
-      const membersIds = memberArticles.map(
-        (articleAppraiser: ActorArticle) => articleAppraiser.member_id,
+      console.log('chegou aqui');
+      const authorsIds = authorArticles.map(
+        (articleAvaliator: ActorArticle) => articleAvaliator.authorId,
       );
 
       const nameArray: string[] = [];
 
-      memberArticles.map((member: ActorArticle) => {
-        const memberName = appraisersIds.map((appraiserId: Number) => {
-          if (appraiserId === member.member_id) {
-            const { name } = member;
+      authorArticles.map((author: ActorArticle) => {
+        const authorName = avaliatorsIds.map((avaliatorId: Number) => {
+          if (avaliatorId === author.actorId) {
+            const { name } = author;
             return nameArray.push(name);
           }
         });
-        return memberName;
+        return authorName;
       });
 
       let existsNember = 0;
 
-      for (let i = 0; i < appraisersIds.length; i++) {
-        for (let j = 0; j < membersIds.length; j++) {
-          if (appraisersIds[i] === membersIds[j]) {
+      for (let i = 0; i < avaliatorsIds.length; i++) {
+        for (let j = 0; j < authorsIds.length; j++) {
+          if (avaliatorsIds[i] === authorsIds[j]) {
             existsNember = 1;
           }
         }
@@ -289,23 +288,23 @@ export default class CommittieesControllers {
         });
       }
 
-      const committieeArticles = articles.map((article: Article) => ({
-        committiee_id: committieeId,
-        article_id: article.id,
+      const committieeArticles = articlesId.map((article: Article) => ({
+        committieeId,
+        articleId: article.id,
       }));
 
-      await trx('committiee_appraisers').insert(committieeApraisers);
-      await trx('committiee_events').insert({
-        event_id: event,
-        committiee_id: committieeId,
+      await trx('COMMITTIEE_AVALIATOR').insert(committieeAvaliators);
+      await trx('COMMITTIEES_EVENTS').insert({
+        eventId,
+        committieeId,
       });
-      await trx('committiee_articles').insert(committieeArticles);
+      await trx('COMMITTIEE_ARTICLES').insert(committieeArticles);
 
       /*
        * Atualizando vários registros de uma única vez
        */
-      const actorsUpdate = appraisersIds.map(async (id: Number) => {
-        const update = await trx('actors')
+      const actorsUpdate = avaliatorsIds.map(async (id: Number) => {
+        const update = await trx('ACTORS')
           .update({
             type: 'avaliador',
           })
