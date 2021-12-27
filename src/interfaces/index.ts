@@ -47,13 +47,13 @@ export interface Actor extends User {
   userId: number;
 }
 
-export interface CommittieeAppraiser extends Committiee {
+export interface CommittieeAppraiser extends Committiee, Actor {
   committieeId: number;
   appraiserId: number;
   [key: string]: any;
 }
 
-export interface CommittieeArticle extends Article {
+export interface CommittieeArticle extends Committiee, Article {
   committieeId: number;
   articleId: number;
   [key: string]: any;
