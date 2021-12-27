@@ -1,5 +1,6 @@
 import { Request, Response } from 'express';
 import db from '../database/database';
+import { ArticleEvent, ArticleTopic } from '../interfaces';
 
 export default class ArticlesController {
   async index(req: Request, res: Response) {
@@ -22,7 +23,7 @@ export default class ArticlesController {
           { userName: 'users.name' },
         ]);
 
-      const articlesResponse = articles.map((article) => ({
+      const articlesResponse = articles.map((article: ArticleEvent) => ({
         id: article.id,
         article: {
           title: article.title,
@@ -53,7 +54,7 @@ export default class ArticlesController {
         member_id: memberId,
       });
 
-      const articleTopoics = topics.map((topic) => ({
+      const articleTopoics = topics.map((topic: ArticleTopic) => ({
         article_id: articlesIds,
         topic_id: topic.id,
       }));
