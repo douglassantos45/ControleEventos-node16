@@ -50,34 +50,41 @@ export interface Actor extends User {
 export interface CommittieeAppraiser extends Committiee {
   committieeId: number;
   appraiserId: number;
+  [key: string]: any;
 }
 
 export interface CommittieeArticle extends Article {
   committieeId: number;
   articleId: number;
+  [key: string]: any;
 }
 
 export interface CommittieeEvent extends Committiee, Event {
   committieeId: number;
   eventId: number;
+  [key: string]: any;
 }
 
 export interface EventTopic extends Event, Topic {
   eventId: number;
   topicId: number;
+  [key: string]: any;
 }
 
 export interface ArticleTopic extends Article, Topic {
   articleId: number;
   topicId: number;
+  [key: string]: any;
 }
 
 export interface ArticleEvent extends Article, Event {
   articleId: number;
   eventId: number;
+  [key: string]: any;
 }
 
 export interface ActorArticle extends Actor, Article {
   actorId: number;
   articleId: number;
+  [key: string]: any;
 }
