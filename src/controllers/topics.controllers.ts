@@ -1,7 +1,7 @@
 import { Requeest, Response } from 'express';
 import db from '../database/database';
 
-export default class Topics {
+export default class TopicsControllers {
   async index(req: Request, res: Response) {
     try {
       const topics = await db('topics');
