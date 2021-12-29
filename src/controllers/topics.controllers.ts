@@ -1,4 +1,4 @@
-import { Requeest, Response } from 'express';
+import { Request, Response } from 'express';
 import db from '../database/database';
 
 export default class TopicsControllers {
