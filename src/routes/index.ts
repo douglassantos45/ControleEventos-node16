@@ -3,6 +3,7 @@ import UserController from '../controllers/users.controllers';
 import EventsController from '../controllers/events.controllers';
 import ArticlesController from '../controllers/articles.controllers';
 import CommittieesControllers from '../controllers/committiees.controllers';
+import TopicsControllers from '../controllers/topics.controllers';
 
 const routes = Router();
 
@@ -10,6 +11,7 @@ const userController = new UserController();
 const eventController = new EventsController();
 const articleController = new ArticlesController();
 const committieeController = new CommittieesControllers();
+const topicsController = new TopicsControllers();
 
 /* USERS */
 routes.get('/users', userController.index);
@@ -34,5 +36,10 @@ routes.get('/committiees', committieeController.index);
 routes.get('/committiees/:id', committieeController.show);
 routes.post('/committiees', committieeController.store);
 /* END COMMITTIEE */
+
+/* TOPICS */
+routes.get('/topics', topicsController.index);
+routes.post('/topics', topicsController.store);
+/* END TOPICS */
 
 export default routes;
