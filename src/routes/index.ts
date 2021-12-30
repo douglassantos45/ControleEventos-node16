@@ -34,7 +34,7 @@ routes.post('/articles', articleController.store);
 /* COMMITTIEE */
 routes.get('/committiees', committieeController.index);
 routes.get('/committiees/:id', committieeController.show);
-routes.post('/committiees', committieeController.store);
+routes.post('/committiees/:id', committieeController.store);
 /* END COMMITTIEE */
 
 /* TOPICS */
