@@ -4,7 +4,7 @@ import db from '../database/database';
 export default class TopicsControllers {
   async index(req: Request, res: Response) {
     try {
-      const topics = await db('topics');
+      const topics = await db('TOPICS');
 
       res.status(200).json({
         error: false,
@@ -20,8 +20,12 @@ export default class TopicsControllers {
   }
 
   async store(req: Request, res: Response) {
+    const { type } = req.body;
     try {
-      res.send('Store');
+      await db('TOPICS').insert({
+        type,
+      });
+      res.status(201).send();
     } catch (err) {
       console.log(`Error in STORE of TOPICS controller ${err}`);
       return res.status(500).json({
