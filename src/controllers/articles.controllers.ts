@@ -22,7 +22,7 @@ export default class ArticlesController {
           'ARTICLES.title',
           { userName: 'USERS.name' },
         ]);
-      console.log(articles);
+
       const articlesResponse = articles.map((article: ArticleEvent) => ({
         id: article.id,
         article: {
@@ -46,7 +46,7 @@ export default class ArticlesController {
   }
 
   async store(req: Request, res: Response) {
-    const { title, actorId, eventId, topics } = req.body;
+    const { title, actorId, eventId, topicsIds } = req.body;
     const trx = await db.transaction();
     try {
       const articlesIds = await trx('ARTICLES').insert({
@@ -54,7 +54,7 @@ export default class ArticlesController {
         actorId,
       });
 
-      const articleTopoics = topics.map((topic: ArticleTopic) => ({
+      const articleTopoics = topicsIds.map((topic: ArticleTopic) => ({
         articleId: articlesIds,
         topicId: topic.id,
       }));
