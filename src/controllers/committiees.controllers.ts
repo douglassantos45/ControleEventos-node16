@@ -222,7 +222,9 @@ export default class CommittieesControllers {
   }
 
   async store(req: Request, res: Response) {
-    const { coordenatorId, avaliatorsId, eventId, articlesId } = req.body;
+    const { coordenatorId, avaliatorsId, articlesId } = req.body;
+    const eventId = req.params.id;
+
     const trx = await db.transaction();
 
     try {
