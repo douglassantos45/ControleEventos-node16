@@ -49,7 +49,7 @@ export default class CommittieesControllers {
         .join('USERS', 'USERS.id', '=', 'ACTORS.userId')
         .select([{ committieeId: 'committiees.id' }, 'USERS.name']);
 
-      const committeeResponse = committiees.map((committiee: Committiee) => {
+      const committieeResponse = committiees.map((committiee: Committiee) => {
         const avaliators = committieesAvaliators.filter(
           (committieeAvaliator: CommittieeAvaliator) => {
             if (committiee.id === committieeAvaliator.committieeId) {
@@ -90,7 +90,7 @@ export default class CommittieesControllers {
         };
       });
 
-      res.status(200).json(committeeResponse);
+      res.status(200).json(committieeResponse);
     } catch (err) {
       console.log(`Error in INDEX of COMMITTIEE controllers ${err}`);
       return res.status(500).json({
@@ -112,7 +112,7 @@ export default class CommittieesControllers {
       if (!committiee) {
         return res.status(404).json({
           error: false,
-          message: 'Committee not found!',
+          message: 'committiee not found!',
         });
       }
 
@@ -189,7 +189,7 @@ export default class CommittieesControllers {
         }),
       );
 
-      const committeeResponse = {
+      const committieeResponse = {
         committiee: {
           id: committiee.id,
           coordenator: coordenatorCommittiee.name,
@@ -211,7 +211,7 @@ export default class CommittieesControllers {
         },
       };
 
-      res.status(200).json(committeeResponse);
+      res.status(200).json(committieeResponse);
     } catch (err) {
       console.log(`Error in INDEX of COMMITTIEE controllers ${err}`);
       return res.status(500).json({
@@ -286,7 +286,7 @@ export default class CommittieesControllers {
         await trx.rollback();
         return res.status(401).json({
           error: true,
-          message: `The ${nameArray} reviewer cannot have an article to be reviewed by the same committee.`,
+          message: `The ${nameArray} reviewer cannot have an article to be reviewed by the same committiee.`,
         });
       }
 
