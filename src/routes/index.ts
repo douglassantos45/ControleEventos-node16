@@ -17,6 +17,7 @@ const institutionsController = new InstitutionsController();
 
 /* USERS */
 routes.get('/users', userController.index);
+routes.get('/users/:id', userController.show);
 routes.post('/users', userController.store);
 routes.patch('/users/:id', userController.update);
 routes.delete('/users/:id', userController.remove);
