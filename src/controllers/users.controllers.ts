@@ -1,7 +1,13 @@
 import { Request, Response } from 'express';
 import db from '../database/database';
 
-import { Actor, User } from '../interfaces/index';
+import {
+  Actor,
+  Article,
+  ArticleEvent,
+  Institution,
+  User,
+} from '../interfaces/index';
 
 export default class UserController {
   async index(req: Request, res: Response) {
@@ -34,11 +40,9 @@ export default class UserController {
   async show(req: Request, res: Response) {
     const { id } = req.params;
     try {
-      const [user]: User[] = await db('ACTORS')
-        .join('USERS', 'USERS.id', '=', 'ACTORS.userId')
-        .where('USERS.id', '=', id)
-        .join('INSTITUTIONS', 'INSTITUTIONS.id', '=', 'ACTORS.institutionId')
-        .select(['USERS.*', 'INSTITUTIONS.*']);
+      const [user]: User[] = await db('USERS')
+        .where('id', '=', id)
+        .select(['USERS.*']);
 
       if (!user) {
         return res.status(404).json({
@@ -47,7 +51,63 @@ export default class UserController {
         });
       }
 
-      res.status(200).json(user);
+      const institutions: Institution[] = await db('INSTITUTIONS')
+        .join('ACTORS', 'ACTORS.institutionId', '=', 'INSTITUTIONS.id')
+        .join('USERS', 'USERS.id', '=', 'ACTORS.userId')
+        .where('USERS.id', '=', id)
+        .select(['INSTITUTIONS.*']);
+
+      const articles: Article[] = await db('AUTHOR_ARTICLES')
+        .join('ACTORS', 'ACTORS.id', '=', 'AUTHOR_ARTICLES.actorId')
+        .join('ARTICLES', 'ARTICLES.id', '=', 'AUTHOR_ARTICLES.articleId')
+        .join('USERS', 'USERS.id', '=', 'ACTORS.userId')
+        .where('USERS.id', '=', id)
+        .select(['ARTICLES.*']);
+
+      const articleEvents: ArticleEvent[] = await db('ARTICLE_EVENTS')
+        .join('EVENTS', 'EVENTS.id', '=', 'ARTICLE_EVENTS.eventId')
+        .join('ARTICLES', 'ARTICLES.id', '=', 'ARTICLE_EVENTS.articleId')
+        .select([{ articleId: 'ARTICLE_EVENTS.articleId' }, 'EVENTS.*']);
+
+      const articleResponse = articles.map((article) => {
+        const events = articleEvents.filter((event) => {
+          if (event.articleId === article.id) {
+            return event;
+          }
+        });
+
+        const [event] = events.map((ev) => ({
+          name: ev.name,
+        }));
+
+        return {
+          id: article.id,
+          title: article.title,
+          events: event,
+        };
+      });
+
+      const { name, cep, mail, phone, street } = user;
+
+      const institutionResponse = institutions.map((institution) => ({
+        id: institution.id,
+        name: institution.name,
+        city: institution.city,
+        country: institution.country,
+      }));
+
+      const userResponse = {
+        id: Number(id),
+        name,
+        cep,
+        street,
+        mail,
+        phone,
+        institution: institutionResponse,
+        articles: articleResponse,
+      };
+
+      res.status(200).json(userResponse);
     } catch (err) {
       console.log(`Error in SHOW of USER controller ${err}`);
       res.status(500).json({
