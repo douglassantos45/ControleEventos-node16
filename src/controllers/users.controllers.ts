@@ -29,7 +29,7 @@ export default class UserController {
         })),
       });
     } catch (err) {
-      console.log(`Error in Index of USER controller ${err}`);
+      console.log(`Error in INDEX of USER controller ${err}`);
       res.status(500).json({
         error: true,
         message: 'Error',
