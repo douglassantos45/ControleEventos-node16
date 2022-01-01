@@ -1,5 +1,6 @@
 import { Request, Response } from 'express';
 import db from '../database/database';
+import { Institution } from '../interfaces';
 
 export default class InstitutionsController {
   async index(req: Request, res: Response) {
@@ -19,9 +20,13 @@ export default class InstitutionsController {
   }
 
   async store(req: Request, res: Response) {
-    const data = req.body;
+    const { name, city, country }: Institution = req.body;
     try {
-      await db('INSTITUTIONS').insert(data);
+      await db('INSTITUTIONS').insert({
+        name,
+        city,
+        country,
+      });
       res.status(201).send();
     } catch (err) {
       console.log(`Error in STORE of INSTITUTIONS controller ${err}`);
