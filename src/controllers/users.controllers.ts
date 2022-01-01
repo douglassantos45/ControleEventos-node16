@@ -1,7 +1,7 @@
 import { Request, Response } from 'express';
 import db from '../database/database';
 
-import { Actor } from '../interfaces/index';
+import { Actor, User } from '../interfaces/index';
 
 export default class UserController {
   async index(req: Request, res: Response) {
@@ -24,6 +24,32 @@ export default class UserController {
       });
     } catch (err) {
       console.log(`Error in Index of USER controller ${err}`);
+      res.status(500).json({
+        error: true,
+        message: 'Error',
+      });
+    }
+  }
+
+  async show(req: Request, res: Response) {
+    const { id } = req.params;
+    try {
+      const [user]: User[] = await db('ACTORS')
+        .join('USERS', 'USERS.id', '=', 'ACTORS.userId')
+        .where('USERS.id', '=', id)
+        .join('INSTITUTIONS', 'INSTITUTIONS.id', '=', 'ACTORS.institutionId')
+        .select(['USERS.*', 'INSTITUTIONS.*']);
+
+      if (!user) {
+        return res.status(404).json({
+          error: false,
+          message: 'User not found.',
+        });
+      }
+
+      res.status(200).json(user);
+    } catch (err) {
+      console.log(`Error in SHOW of USER controller ${err}`);
       res.status(500).json({
         error: true,
         message: 'Error',
