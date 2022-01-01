@@ -6,8 +6,8 @@ import { Actor } from '../interfaces/index';
 export default class UserController {
   async index(req: Request, res: Response) {
     try {
-      const users = await db('ACTORS')
-        .join('USERS', 'USERS.id', '=', 'ACTORS.userId')
+      const users = await db('USERS')
+        .join('ACTORS', 'ACTORS.userId', '=', 'USERS.id')
         .select(['ACTORS.type', 'USERS.*']);
 
       res.status(200).json({
@@ -32,7 +32,17 @@ export default class UserController {
   }
 
   async store(req: Request, res: Response) {
-    const { name, genus, cep, street, phone, mail, password, type } = req.body;
+    const {
+      name,
+      genus,
+      cep,
+      street,
+      phone,
+      mail,
+      password,
+      type,
+      institutionId,
+    } = req.body;
     const trx = await db.transaction();
 
     try {
@@ -49,6 +59,7 @@ export default class UserController {
       await trx('ACTORS').insert({
         type,
         userId: usersId,
+        institutionId,
       });
 
       await trx.commit();

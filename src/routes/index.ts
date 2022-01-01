@@ -4,6 +4,7 @@ import EventsController from '../controllers/events.controllers';
 import ArticlesController from '../controllers/articles.controllers';
 import CommittieesControllers from '../controllers/committiees.controllers';
 import TopicsControllers from '../controllers/topics.controllers';
+import InstitutionsController from '../controllers/institutions.controllers';
 
 const routes = Router();
 
@@ -12,6 +13,7 @@ const eventController = new EventsController();
 const articleController = new ArticlesController();
 const committieeController = new CommittieesControllers();
 const topicsController = new TopicsControllers();
+const institutionsController = new InstitutionsController();
 
 /* USERS */
 routes.get('/users', userController.index);
@@ -41,5 +43,10 @@ routes.post('/committiees/:id', committieeController.store);
 routes.get('/topics', topicsController.index);
 routes.post('/topics', topicsController.store);
 /* END TOPICS */
+
+/* INSTITUTIONS */
+routes.get('/institutions', institutionsController.index);
+routes.post('/institutions', institutionsController.store);
+/* END INSTITUTIONS */
 
 export default routes;

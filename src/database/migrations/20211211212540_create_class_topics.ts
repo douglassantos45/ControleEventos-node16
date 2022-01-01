@@ -6,11 +6,11 @@ export async function up(knex: Knex): Promise<void> {
     table.string('type').notNullable();
 
     table
-      .timestamp('createdAT')
+      .timestamp('createdAt')
       .defaultTo(knex.raw('CURRENT_TIMESTAMP'))
       .notNullable();
     table
-      .timestamp('updatedAT')
+      .timestamp('updatedAt')
       .defaultTo(knex.raw('CURRENT_TIMESTAMP'))
       .notNullable();
   });
