@@ -4,17 +4,16 @@ import db from '../database/database';
 import {
   Event,
   EventTopic,
-  Committiee,
   CommittieeEvent,
   CommittieeArticle,
-  Article,
+  Actor,
 } from '../interfaces/index';
 
 export default class EventsController {
   async index(req: Request, res: Response) {
     try {
-      const events = await db('EVENTS');
-      const eventsTopics = await db('EVENT_TOPICS')
+      const events: Event[] = await db('EVENTS');
+      const eventsTopics: EventTopic[] = await db('EVENT_TOPICS')
         .join('EVENTS', 'EVENTS.id', '=', 'EVENT_TOPICS.eventId')
         .join('topics', 'topics.id', '=', 'EVENT_TOPICS.topicId')
         .select(['EVENTS.id', 'topics.type']);
@@ -57,8 +56,16 @@ export default class EventsController {
   async show(req: Request, res: Response) {
     const { id } = req.params;
     try {
-      const [event] = await db('EVENTS').where('EVENTS.id', '=', id);
-      const committieesEvent = await db('COMMITTIEES_EVENTS')
+      const [event]: Event[] = await db('EVENTS').where('EVENTS.id', '=', id);
+
+      if (!event) {
+        return res.status(404).json({
+          error: false,
+          message: 'Event not found!',
+        });
+      }
+
+      const committieesEvent: CommittieeEvent[] = await db('COMMITTIEES_EVENTS')
         .join(
           'COMMITTIEES',
           'COMMITTIEES.id',
@@ -69,19 +76,20 @@ export default class EventsController {
         .join('ACTORS', 'ACTORS.id', '=', 'EVENTS.coordenatorId')
         .join('USERS', 'USERS.id', '=', 'ACTORS.userId');
 
-      const committieeArticles = await db('COMMITTIEE_ARTICLES').join(
-        'ARTICLES',
-        'ARTICLES.id',
-        '=',
-        'COMMITTIEE_ARTICLES.articleId',
-      );
+      const committieeArticles: CommittieeArticle[] = await db(
+        'COMMITTIEE_ARTICLES',
+      ).join('ARTICLES', 'ARTICLES.id', '=', 'COMMITTIEE_ARTICLES.articleId');
 
-      if (!event) {
-        return res.status(404).json({
-          error: false,
-          message: 'Event not found!',
-        });
-      }
+      const coordenatorCommittiees = await db('COMMITTIEES')
+        .join('ACTORS', 'ACTORS.id', '=', 'COMMITTIEES.coordenatorId')
+        .join('USERS', 'USERS.id', '=', 'ACTORS.userId')
+        .select([{ committieeId: 'COMMITTIEES.id' }, 'USERS.name']);
+
+      const [coordenatorCommittiee] = coordenatorCommittiees.map(
+        (coordenator: Actor) => ({
+          name: coordenator.name,
+        }),
+      );
 
       const committiees = committieesEvent.filter(
         (committieeEvent: CommittieeEvent) => {
@@ -102,7 +110,7 @@ export default class EventsController {
 
         return {
           id: committiee.committieeId,
-          articles: articles.map((article: Article) => ({
+          articles: articles.map((article: CommittieeArticle) => ({
             title: article.title,
           })),
         };
@@ -118,7 +126,7 @@ export default class EventsController {
           deadline,
           start,
           end,
-          coordenator: 'test',
+          coordenator: coordenatorCommittiee.name,
           committiee: committieeEvent,
         },
       };
@@ -139,7 +147,7 @@ export default class EventsController {
 
     const trx = await db.transaction();
     try {
-      const [event] = await trx('EVENTS').where('name', '=', name);
+      const [event]: Event[] = await trx('EVENTS').where('name', '=', name);
       if (event) {
         await trx.rollback();
         return res.status(401).json({
@@ -148,7 +156,7 @@ export default class EventsController {
         });
       }
 
-      const eventsId = await trx('EVENTS').insert({
+      const eventsId: Number = await trx('EVENTS').insert({
         name,
         federation,
         deadline,
@@ -157,7 +165,7 @@ export default class EventsController {
         coordenatorId,
       });
 
-      const eventTopics = topics.map((topic: EventTopic) => ({
+      const eventTopics: EventTopic = topics.map((topic: EventTopic) => ({
         eventId: eventsId,
         topicId: topic.id,
       }));
