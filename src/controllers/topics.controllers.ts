@@ -1,10 +1,11 @@
 import { Request, Response } from 'express';
 import db from '../database/database';
+import { Topic } from '../interfaces';
 
 export default class TopicsControllers {
   async index(req: Request, res: Response) {
     try {
-      const topics = await db('TOPICS');
+      const topics: Topic[] = await db('TOPICS');
 
       res.status(200).json({
         error: false,
@@ -20,7 +21,7 @@ export default class TopicsControllers {
   }
 
   async store(req: Request, res: Response) {
-    const { type } = req.body;
+    const { type }: Topic = req.body;
     try {
       await db('TOPICS').insert({
         type,

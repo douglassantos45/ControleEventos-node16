@@ -5,7 +5,7 @@ import { Institution } from '../interfaces';
 export default class InstitutionsController {
   async index(req: Request, res: Response) {
     try {
-      const institutions = await db('INSTITUTIONS');
+      const institutions: Institution[] = await db('INSTITUTIONS');
       res.status(200).json({
         error: false,
         data: institutions,

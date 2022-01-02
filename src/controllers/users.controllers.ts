@@ -12,13 +12,13 @@ import {
 export default class UserController {
   async index(req: Request, res: Response) {
     try {
-      const users = await db('USERS')
-        .join('ACTORS', 'ACTORS.userId', '=', 'USERS.id')
+      const users: Actor[] = await db('ACTORS')
+        .join('USERS', 'USERS.id', '=', 'ACTORS.userId')
         .select(['ACTORS.type', 'USERS.*']);
 
       res.status(200).json({
         error: false,
-        data: users.map((user: Actor) => ({
+        data: users.map((user) => ({
           id: user.id,
           name: user.name,
           email: user.mail,

@@ -91,26 +91,22 @@ export default class EventsController {
         }),
       );
 
-      const committiees = committieesEvent.filter(
-        (committieeEvent: CommittieeEvent) => {
-          if (event.id === committieeEvent.eventId) {
-            return committieeEvent;
-          }
-        },
-      );
+      const committiees = committieesEvent.filter((committieeEvent) => {
+        if (event.id === committieeEvent.eventId) {
+          return committieeEvent;
+        }
+      });
 
-      const committieeEvent = committiees.map((committiee: CommittieeEvent) => {
-        const articles = committieeArticles.filter(
-          (article: CommittieeArticle) => {
-            if (article.committieeId === committiee.committieeId) {
-              return article;
-            }
-          },
-        );
+      const committieeEvent = committiees.map((committiee) => {
+        const articles = committieeArticles.filter((article) => {
+          if (article.committieeId === committiee.committieeId) {
+            return article;
+          }
+        });
 
         return {
           id: committiee.committieeId,
-          articles: articles.map((article: CommittieeArticle) => ({
+          articles: articles.map((article) => ({
             title: article.title,
           })),
         };
@@ -142,8 +138,15 @@ export default class EventsController {
   }
 
   async store(req: Request, res: Response) {
-    const { name, federation, deadline, start, end, topics, coordenatorId } =
-      req.body;
+    const {
+      name,
+      federation,
+      deadline,
+      start,
+      end,
+      topics,
+      coordenatorId,
+    }: EventTopic = req.body;
 
     const trx = await db.transaction();
     try {
@@ -156,7 +159,7 @@ export default class EventsController {
         });
       }
 
-      const eventsId: Number = await trx('EVENTS').insert({
+      const eventsId: number = await trx('EVENTS').insert({
         name,
         federation,
         deadline,

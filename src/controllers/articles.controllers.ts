@@ -1,11 +1,11 @@
 import { Request, Response } from 'express';
 import db from '../database/database';
-import { ArticleEvent, ArticleTopic } from '../interfaces';
+import { ArticleEvent, ArticleTopic, Topic } from '../interfaces';
 
 export default class ArticlesController {
   async index(req: Request, res: Response) {
     try {
-      const articles = await db('ARTICLE_EVENTS')
+      const articles: ArticleEvent[] = await db('ARTICLE_EVENTS')
         .join('EVENTS', 'EVENTS.id', '=', 'ARTICLE_EVENTS.eventId')
         .join(
           'AUTHOR_ARTICLES',
@@ -23,7 +23,7 @@ export default class ArticlesController {
           { userName: 'USERS.name' },
         ]);
 
-      const articlesResponse = articles.map((article: ArticleEvent) => ({
+      const articlesResponse = articles.map((article) => ({
         id: article.id,
         article: {
           title: article.title,
@@ -46,18 +46,20 @@ export default class ArticlesController {
   }
 
   async store(req: Request, res: Response) {
-    const { title, actorId, eventId, topicsIds } = req.body;
+    const { title, actorId, eventId, topicsIds }: ArticleEvent = req.body;
     const trx = await db.transaction();
     try {
-      const articlesIds = await trx('ARTICLES').insert({
+      const articlesIds: number[] = await trx('ARTICLES').insert({
         title,
         actorId,
       });
 
-      const articleTopoics = topicsIds.map((topic: ArticleTopic) => ({
-        articleId: articlesIds,
-        topicId: topic.id,
-      }));
+      const articleTopoics: ArticleTopic = topicsIds.map(
+        (topic: ArticleTopic) => ({
+          articleId: articlesIds,
+          topicId: topic.id,
+        }),
+      );
 
       await trx('ARTICLE_TOPICS').insert(articleTopoics);
       await trx('ARTICLE_EVENTS').insert({

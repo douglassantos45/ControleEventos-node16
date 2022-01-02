@@ -4,20 +4,22 @@ import { Request, Response } from 'express';
 import db from '../database/database';
 import {
   Actor,
-  ActorArticle,
   Article,
   Committiee,
   CommittieeAvaliator,
   CommittieeArticle,
   CommittieeEvent,
+  AuthorArticle,
 } from '../interfaces';
 
 export default class CommittieesControllers {
   async index(req: Request, res: Response) {
     try {
-      const committiees = await db('COMMITTIEES');
+      const committiees: Committiee[] = await db('COMMITTIEES');
 
-      const committieesAvaliators = await db('COMMITTIEE_AVALIATOR')
+      const committieesAvaliators: CommittieeAvaliator[] = await db(
+        'COMMITTIEE_AVALIATOR',
+      )
         .join(
           'COMMITTIEES',
           'COMMITTIEES.id',
@@ -33,7 +35,9 @@ export default class CommittieesControllers {
           'USERS.*',
         ]);
 
-      const committieesEvents = await db('COMMITTIEES_EVENTS')
+      const committieesEvents: CommittieeEvent[] = await db(
+        'COMMITTIEES_EVENTS',
+      )
         .join('EVENTS', 'EVENTS.id', '=', 'COMMITTIEES_EVENTS.eventId')
         .join('ACTORS', 'ACTORS.id', '=', 'EVENTS.coordenatorId')
         .join('USERS', 'USERS.id', '=', 'ACTORS.userId')
@@ -49,26 +53,24 @@ export default class CommittieesControllers {
         .join('USERS', 'USERS.id', '=', 'ACTORS.userId')
         .select([{ committieeId: 'committiees.id' }, 'USERS.name']);
 
-      const committieeResponse = committiees.map((committiee: Committiee) => {
+      const committieeResponse = committiees.map((committiee) => {
         const avaliators = committieesAvaliators.filter(
-          (committieeAvaliator: CommittieeAvaliator) => {
+          (committieeAvaliator) => {
             if (committiee.id === committieeAvaliator.committieeId) {
               return { committieeAvaliator };
             }
           },
         );
 
-        const committieeEvent = committieesEvents.filter(
-          (event: CommittieeEvent) => {
-            if (event.committieeId === committiee.id) {
-              return { event };
-            }
-          },
-        );
+        const committieeEvent = committieesEvents.filter((event) => {
+          if (event.committieeId === committiee.id) {
+            return { event };
+          }
+        });
 
         const [event] = committieeEvent.map((ev) => ({
-          name: ev.eventName,
-          coordenator: ev.userName,
+          name: ev.eventName as string,
+          coordenator: ev.userName as string,
         }));
 
         const [coordenatorCommittiee] = coordenatorCommittiees.map(
@@ -103,7 +105,7 @@ export default class CommittieesControllers {
   async show(req: Request, res: Response) {
     const { id } = req.params;
     try {
-      const [committiee] = await db('COMMITTIEES').where(
+      const [committiee]: Committiee[] = await db('COMMITTIEES').where(
         'COMMITTIEES.id',
         '=',
         id,
@@ -112,11 +114,13 @@ export default class CommittieesControllers {
       if (!committiee) {
         return res.status(404).json({
           error: false,
-          message: 'committiee not found!',
+          message: 'Committiee not found!',
         });
       }
 
-      const committieesAvaliators = await db('COMMITTIEE_AVALIATOR')
+      const committieesAvaliators: CommittieeAvaliator[] = await db(
+        'COMMITTIEE_AVALIATOR',
+      )
         .join(
           'COMMITTIEES',
           'COMMITTIEES.id',
@@ -132,7 +136,9 @@ export default class CommittieesControllers {
           'USERS.*',
         ]);
 
-      const [committieesEvents] = await db('COMMITTIEES_EVENTS')
+      const [committieesEvents]: CommittieeEvent[] = await db(
+        'COMMITTIEES_EVENTS',
+      )
         .join('EVENTS', 'EVENTS.id', '=', 'COMMITTIEES_EVENTS.eventId')
         .join('ACTORS', 'ACTORS.id', '=', 'EVENTS.coordenatorId')
         .join('USERS', 'USERS.id', '=', 'ACTORS.userId')
@@ -144,7 +150,9 @@ export default class CommittieesControllers {
           'EVENTS.*',
         ]);
 
-      const committieeArticles = await db('COMMITTIEE_ARTICLES')
+      const committieeArticles: CommittieeArticle[] = await db(
+        'COMMITTIEE_ARTICLES',
+      )
         .join('ARTICLES', 'ARTICLES.id', '=', 'COMMITTIEE_ARTICLES.articleId')
         .join('ACTORS', 'ACTORS.id', '=', 'ARTICLES.actorId')
         .join('USERS', 'USERS.id', '=', 'ACTORS.userId')
@@ -162,21 +170,17 @@ export default class CommittieesControllers {
 
       const { userName, eventName, federation, start, end } = committieesEvents;
 
-      const avaliators = committieesAvaliators.filter(
-        (committieeAvaliator: CommittieeAvaliator) => {
-          if (committiee.id === committieeAvaliator.committieeId) {
-            return { committieeAvaliator };
-          }
-        },
-      );
+      const avaliators = committieesAvaliators.filter((committieeAvaliator) => {
+        if (committiee.id === committieeAvaliator.committieeId) {
+          return { committieeAvaliator };
+        }
+      });
 
-      const articles = committieeArticles.filter(
-        (article: CommittieeArticle) => {
-          if (committiee.id === article.committieeId) {
-            return { article };
-          }
-        },
-      );
+      const articles = committieeArticles.filter((article) => {
+        if (committiee.id === article.committieeId) {
+          return { article };
+        }
+      });
 
       const committieeResponse = {
         committiee: {
@@ -211,22 +215,22 @@ export default class CommittieesControllers {
 
   async store(req: Request, res: Response) {
     const { coordenatorId, avaliatorsId, articlesId } = req.body;
-    const eventId = req.params.id;
+    const eventId = Number(req.params.id);
 
     const trx = await db.transaction();
 
     try {
-      const committieeId = await trx('COMMITTIEES').insert({
+      const committieeId: Committiee[] = await trx('COMMITTIEES').insert({
         coordenatorId,
       });
-      const committieeAvaliators = avaliatorsId.map(
+      const committieeAvaliators: CommittieeAvaliator[] = avaliatorsId.map(
         (avaliator: CommittieeAvaliator) => ({
           committieeId,
           actorId: avaliator.id,
         }),
       );
 
-      const authorArticles = await trx('ARTICLE_EVENTS')
+      const authorArticles: AuthorArticle[] = await trx('ARTICLE_EVENTS')
         .join('EVENTS', 'EVENTS.id', '=', 'ARTICLE_EVENTS.eventId')
         .join(
           'AUTHOR_ARTICLES',
@@ -240,18 +244,18 @@ export default class CommittieesControllers {
         .where('EVENTS.id', '=', eventId)
         .select(['USERS.name', 'ARTICLES.actorId']);
 
-      const avaliatorsIds = committieeAvaliators.map(
+      const avaliatorsIds: number[] = committieeAvaliators.map(
         (avaliator: CommittieeAvaliator) => avaliator.actorId,
       );
-      console.log('chegou aqui');
+
       const authorsIds = authorArticles.map(
-        (articleAvaliator: ActorArticle) => articleAvaliator.authorId,
+        (articleAvaliator) => articleAvaliator.actorId,
       );
 
       const nameArray: string[] = [];
 
-      authorArticles.map((author: ActorArticle) => {
-        const authorName = avaliatorsIds.map((avaliatorId: Number) => {
+      authorArticles.map((author) => {
+        const authorName = avaliatorsIds.map((avaliatorId) => {
           if (avaliatorId === author.actorId) {
             const { name } = author;
             return nameArray.push(name);
@@ -278,10 +282,12 @@ export default class CommittieesControllers {
         });
       }
 
-      const committieeArticles = articlesId.map((article: Article) => ({
-        committieeId,
-        articleId: article.id,
-      }));
+      const committieeArticles: CommittieeArticle = articlesId.map(
+        (article: Article) => ({
+          committieeId,
+          articleId: article.id,
+        }),
+      );
 
       await trx('COMMITTIEE_AVALIATOR').insert(committieeAvaliators);
       await trx('COMMITTIEES_EVENTS').insert({
@@ -293,7 +299,7 @@ export default class CommittieesControllers {
       /*
        * Atualizando vários registros de uma única vez
        */
-      const actorsUpdate = avaliatorsIds.map(async (id: Number) => {
+      const actorsUpdate = avaliatorsIds.map(async (id: number) => {
         const update = await trx('ACTORS')
           .update({
             type: 'avaliador',
