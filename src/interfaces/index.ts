@@ -15,7 +15,7 @@ export interface Event {
   deadline: string;
   start: string;
   end: string;
-  coordenator_id: number;
+  coordenatorId: number;
 }
 
 export interface Topic {
@@ -49,7 +49,7 @@ export interface Actor extends User {
 
 export interface CommittieeAvaliator extends Committiee, Actor {
   committieeId: number;
-  avaliatorId: number;
+  actorId: number;
   [key: string]: any;
 }
 
@@ -83,7 +83,7 @@ export interface ArticleEvent extends Article, Event {
   [key: string]: any;
 }
 
-export interface ActorArticle extends Actor, Article {
+export interface AuthorArticle extends Actor, Article {
   actorId: number;
   articleId: number;
   [key: string]: any;
