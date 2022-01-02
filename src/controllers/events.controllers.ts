@@ -102,9 +102,6 @@ export default class EventsController {
 
         return {
           id: committiee.committieeId,
-          coordenator: {
-            name: committiee.name,
-          },
           articles: articles.map((article: Article) => ({
             title: article.title,
           })),
@@ -121,6 +118,7 @@ export default class EventsController {
           deadline,
           start,
           end,
+          coordenator: 'test',
           committiee: committieeEvent,
         },
       };
